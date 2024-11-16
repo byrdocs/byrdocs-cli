@@ -115,7 +115,7 @@ if __name__ == "__main__":
             
         payload = json.dumps(
             {
-                "key": (new_filename := f"{md5}.{file_type}"),    # TODO: 多类型文件上传支持
+                "key": (new_filename := f"{md5}.{file_type}"),
             }
         )
         headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
@@ -124,9 +124,9 @@ if __name__ == "__main__":
             "POST", f"{baseURL}/api/s3/upload", headers=headers, data=payload
         )
 
-        data = response.json()
+        upload_response_data = response.json()
 
-        if not data["success"]:
+        if not upload_response_data["success"]:
             print(response.text)    # TODO: 优化失败处理
             exit(1)
 
@@ -134,9 +134,9 @@ if __name__ == "__main__":
         # input("Press Enter to continue uploading...")
 
         temporary_credentials = {
-            "AccessKeyId": data["credentials"]["access_key_id"],
-            "SecretAccessKey": data["credentials"]["secret_access_key"],
-            "SessionToken": data["credentials"]["session_token"],
+            "AccessKeyId": upload_response_data["credentials"]["access_key_id"],
+            "SecretAccessKey": upload_response_data["credentials"]["secret_access_key"],
+            "SessionToken": upload_response_data["credentials"]["session_token"],
         }
 
         s3_client = boto3.client(
@@ -150,7 +150,7 @@ if __name__ == "__main__":
 
         bucket_name = "test"
         file_name = file
-        object_name = data["key"]
+        object_name = upload_response_data["key"]
 
         try:
             s3_client.upload_file(
@@ -159,13 +159,13 @@ if __name__ == "__main__":
                 object_name,
                 ExtraArgs={
                     "Tagging": "&".join(
-                        [f"{key}={value}" for key, value in data["tags"].items()]
+                        [f"{key}={value}" for key, value in upload_response_data["tags"].items()]
                     )
                 },
             )
             print("File uploaded successfully")
             print(f"\tFile URL: {baseURL}/files/{new_filename}")
-            print(f"{md5}.pdf status: `Uploaded`")
+            print(f"{new_filename} status: `Uploaded`")
         except (NoCredentialsError, PartialCredentialsError) as e:
             print(f"Credential error: {e}")
         except Exception as e:
