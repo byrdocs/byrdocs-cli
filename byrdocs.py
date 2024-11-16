@@ -14,13 +14,34 @@ command_parser = argparse.ArgumentParser(
     description="BYR Docs file uploader CLI")
 command_parser.add_argument('--version', '-v', action='version', version='version dev-1.0.0')
 # command_parser.add_argument('--help', '-h', action='help', help='Show this help message and exit')
-command_parser.add_argument("command", nargs='?', default='upload', choices=['login', 'logout', 'upload'], help="Command to execute")
+command_parser.add_argument("command", nargs='?', help="Command to execute")
 command_parser.add_argument("file", nargs='?', help="Path to the file to upload").completer = argcomplete.completers.FilesCompleter()
 command_parser.add_argument("--token", help="Token for login command")
+
+
+def is_pdf_file(file) -> bool:
+    # https://en.wikipedia.org/wiki/List_of_file_signatures
+    # use magic number to check file type 
+    with open(file, "rb") as f:
+        magic_number = f.read(4)
+        return magic_number == b"%PDF"
+
+def is_zip_file(file) -> bool:
+    # use magic number to check file type
+    with open(file, "rb") as f:
+        magic_number = f.read(4)
+        return magic_number == b"PK\x03\x04"
 
 if __name__ == "__main__":
     argcomplete.autocomplete(command_parser)
     args = command_parser.parse_args()
+
+    if args.command not in ['login', 'logout', 'upload']:
+        args.file = args.command
+        args.command = 'upload'
+
+    if args.file and not args.command:
+        args.command = 'upload'
 
     baseURL = "https://byrdocs.org"
 
@@ -69,6 +90,7 @@ if __name__ == "__main__":
     with token_path.open("r") as f:
         token = f.read().strip()
 
+
     if args.command == 'upload' or args.file:
         if not args.file:
             print("Error: No file specified for upload.")
@@ -79,8 +101,14 @@ if __name__ == "__main__":
         with open(file, "rb") as f:
             md5 = hashlib.md5(f.read()).hexdigest()
 
-        print(f"Uploading {md5}.pdf ...")
-
+        if is_pdf_file(file):
+            print("File type: PDF")
+        elif is_zip_file(file):
+            print("File type: ZIP")
+        else:
+            print(f"Error: Unsupported file type of {file}, only PDF and ZIP are supported.")
+            exit(1)
+            
         payload = json.dumps(
             {
                 "key": md5 + ".pdf",    # TODO: 多类型文件上传支持
