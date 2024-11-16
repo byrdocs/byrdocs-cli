@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import boto3
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 import requests
@@ -25,7 +24,7 @@ if __name__ == "__main__":
 
     baseURL = "https://byrdocs.org"
 
-    config_dir = pathlib.Path.home() / ".config" / "byrdocs"  # Optimized path
+    config_dir = pathlib.Path.home() / ".config" / "byrdocs" 
     if not config_dir.exists():
         config_dir.mkdir(parents=True)
 
@@ -38,6 +37,10 @@ if __name__ == "__main__":
             print(f"Token saved to {token_path.absolute()}")
             return
 
+        if token_path.exists():
+            print("Token already exists, you can use `byrdocs logout` to remove it.")
+            exit(1)
+        
         print("No token found locally, requesting a new one...")
         data = requests.post(f"{baseURL}/api/auth/login").json()
         print("Please visit the following URL to authorize the application:")
