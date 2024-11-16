@@ -4,8 +4,21 @@ import requests
 import json
 import hashlib
 import pathlib
+import argparse
 import sys
 import os
+
+
+command_parser = argparse.ArgumentParser(
+    prog="byrdocs",
+    description="BYR Docs file uploader CLI")
+command_parser.add_argument('--version', '-v', action='version', version='version dev-1.0.0')
+# command_parser.add_argument('--help', '-h', action='help', help='Show this help message and exit')
+command_parser.add_argument("command", nargs='?', default='upload', choices=['login', 'logout', 'upload'], help="Command to execute")
+command_parser.add_argument("file", nargs='?', help="Path to the file to upload")
+command_parser.add_argument("--token", help="Token for login command")
+
+args = command_parser.parse_args()
 
 baseURL = "https://byrdocs.org"
 
@@ -14,7 +27,15 @@ if not config_dir.exists():
     config_dir.mkdir(parents=True)
 
 token_path = config_dir / "token"
-if not token_path.exists():
+
+def login(token=None):
+    if token:
+        with token_path.open("w") as f:
+            f.write(token)
+        print(f"Token saved to {token_path.absolute()}")
+        return
+
+    print("No token found locally, requesting a new one...")
     data = requests.post(f"{baseURL}/api/auth/login").json()
     print("Please visit the following URL to authorize the application:")
     print("\t" + data["loginURL"])
@@ -27,10 +48,21 @@ if not token_path.exists():
         f.write(token)
     print(f"Login successful, token saved to {token_path.absolute()}")
 
+if args.command == 'login':
+    login(args.token)
+    exit(0)
+
+if not token_path.exists():
+    login()
+
 with token_path.open("r") as f:
     token = f.read().strip()
 
-file = sys.argv[1]  # TODO: 命令行参数优化
+if not args.file:
+    print("Error: No file specified for upload.")
+    exit(1)
+
+file = args.file
 
 with open(file, "rb") as f:
     md5 = hashlib.md5(f.read()).hexdigest()
