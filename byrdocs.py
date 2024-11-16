@@ -3,29 +3,31 @@ from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 import requests
 import json
 import hashlib
+import pathlib
 import sys
 import os
 
 baseURL = "https://byrdocs.org"
 
-config_dir = os.path.join(os.path.expanduser("~"), ".config", "byrdocs")    # TODO: 优化路径
-if not os.path.exists(config_dir):
-    os.makedirs(config_dir)
+config_dir = pathlib.Path.home() / ".config" / "byrdocs"  # Optimized path
+if not config_dir.exists():
+    config_dir.mkdir(parents=True)
 
-if not os.path.exists(os.path.join(config_dir, "token")):
+token_path = config_dir / "token"
+if not token_path.exists():
     data = requests.post(f"{baseURL}/api/auth/login").json()
     print("Please visit the following URL to authorize the application:")
     print("\t" + data["loginURL"])
-    r = requests.get(data["tokenURL"]).json() # TODO: 优化请求与超时
+    r = requests.get(data["tokenURL"]).json()  # TODO: 优化请求与超时
     if not r.get("success", False):
         print(r)
         exit(1)
     token = r["token"]
-    with open(os.path.join(config_dir, "token"), "w") as f:
+    with token_path.open("w") as f:
         f.write(token)
-    print("Login successful, token saved to ~/.config/byrdocs/token")
+    print(f"Login successful, token saved to {token_path.absolute()}")
 
-with open(os.path.join(config_dir, "token"), "r") as f:
+with token_path.open("r") as f:
     token = f.read().strip()
 
 file = sys.argv[1]  # TODO: 命令行参数优化
