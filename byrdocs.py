@@ -19,18 +19,17 @@ command_parser.add_argument("file", nargs='?', help="Path to the file to upload"
 command_parser.add_argument("--token", help="Token for login command")
 
 
-def is_pdf_file(file) -> bool:
+def get_file_type(file) -> bool:
     # https://en.wikipedia.org/wiki/List_of_file_signatures
-    # use magic number to check file type 
-    with open(file, "rb") as f:
-        magic_number = f.read(4)
-        return magic_number == b"%PDF"
-
-def is_zip_file(file) -> bool:
     # use magic number to check file type
     with open(file, "rb") as f:
         magic_number = f.read(4)
-        return magic_number == b"PK\x03\x04"
+        if magic_number == b"%PDF":
+            return "pdf"
+        elif magic_number == b"PK\x03\x04":
+            return "zip"
+        else:
+            return "unsupported"
 
 if __name__ == "__main__":
     argcomplete.autocomplete(command_parser)
@@ -101,17 +100,13 @@ if __name__ == "__main__":
         with open(file, "rb") as f:
             md5 = hashlib.md5(f.read()).hexdigest()
 
-        if is_pdf_file(file):
-            print("File type: PDF")
-        elif is_zip_file(file):
-            print("File type: ZIP")
-        else:
+        if file_type := get_file_type(file) == "unsupported":
             print(f"Error: Unsupported file type of {file}, only PDF and ZIP are supported.")
             exit(1)
             
         payload = json.dumps(
             {
-                "key": md5 + ".pdf",    # TODO: 多类型文件上传支持
+                "key": f"{md5}.{file_type}",    # TODO: 多类型文件上传支持
             }
         )
         headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
