@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 [project]
 name = "byrdocs_cli"
-version = "0.1.0"
+version = "0.1.3"
 authors = [
-  { name="Rikka", email="rikka@byr.inl" },
+  { name="Rikka", email="2560359315@qq.com" },
 ]
 description = "A simple command line tool for BYR Docs"
 readme = "README.md"
@@ -14,6 +14,12 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+]
+dependencies = [
+    "requests>=2.25.1",
+    "boto3==1.35.62",
+    "botocore==1.35.62",
+    "argcomplete==3.5.1"
 ]
 
 [project.scripts]

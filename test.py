@@ -1,0 +1,3 @@
+import byrdocs
+
+byrdocs.main()
