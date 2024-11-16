@@ -152,9 +152,10 @@ if __name__ == "__main__":
             endpoint_url="https://s3.byrdocs.org",
         )
 
-        bucket_name = "test"
+        bucket_name = upload_response_data["bucket"]
         file_name = file
         object_name = upload_response_data["key"]
+        
 
         try:
             s3_client.upload_file(
