@@ -109,7 +109,7 @@ if __name__ == "__main__":
         with open(file, "rb") as f:
             md5 = hashlib.md5(f.read()).hexdigest()
 
-        if file_type := get_file_type(file) == "unsupported":
+        if (file_type := get_file_type(file)) == "unsupported":
             print(f"Error: Unsupported file type of {file}, only PDF and ZIP are supported.")
             exit(1)
             
@@ -127,7 +127,10 @@ if __name__ == "__main__":
         upload_response_data = response.json()
 
         if not upload_response_data["success"]:
-            print(response.text)    # TODO: 优化失败处理
+            try:
+                print(f"Error from server: {response.json()['error']}")    # TODO: 优化失败处理
+            except:
+                print(f"Unknown error: {response.text}")
             exit(1)
 
         print(f"{new_filename} status: `Pending`")
@@ -138,6 +141,7 @@ if __name__ == "__main__":
             "SecretAccessKey": upload_response_data["credentials"]["secret_access_key"],
             "SessionToken": upload_response_data["credentials"]["session_token"],
         }
+        print(temporary_credentials)
 
         s3_client = boto3.client(
             "s3",
@@ -169,4 +173,4 @@ if __name__ == "__main__":
         except (NoCredentialsError, PartialCredentialsError) as e:
             print(f"Credential error: {e}")
         except Exception as e:
-            print(f"Error uploading file: {e}")
+            print(f"Error uploading file: {e}. \nCheck your file tag, logging status and Internet connection, then try again.")
