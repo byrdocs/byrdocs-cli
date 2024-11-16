@@ -161,7 +161,7 @@ def main():
             "SecretAccessKey": upload_response_data["credentials"]["secret_access_key"],
             "SessionToken": upload_response_data["credentials"]["session_token"],
         }
-        print(temporary_credentials)
+        # print(temporary_credentials)
 
         s3_client = boto3.client(
             "s3",
