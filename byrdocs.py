@@ -60,6 +60,11 @@ if __name__ == "__main__":
 
     if not token_path.exists():
         login()
+    
+    if args.command == 'logout':
+        os.remove(token_path)
+        print(f"Token removed from {token_path.absolute()}.")
+        exit(0)
 
     with token_path.open("r") as f:
         token = f.read().strip()
