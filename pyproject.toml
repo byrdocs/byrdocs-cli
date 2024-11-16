@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 [project]
 name = "byrdocs_cli"
-version = "0.0.1"
+version = "0.1.0"
 authors = [
   { name="Rikka", email="rikka@byr.inl" },
 ]
@@ -15,3 +15,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+
+[project.scripts]
+byrdocs = "byrdocs:main"

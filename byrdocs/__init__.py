@@ -31,7 +31,7 @@ def get_file_type(file) -> bool:
         else:
             return "unsupported"
 
-if __name__ == "__main__":
+def main():
     argcomplete.autocomplete(command_parser)
     args = command_parser.parse_args()
 
