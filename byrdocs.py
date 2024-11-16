@@ -65,7 +65,16 @@ if __name__ == "__main__":
         data = requests.post(f"{baseURL}/api/auth/login").json()
         print("Please visit the following URL to authorize the application:")
         print("\t" + data["loginURL"])
-        r = requests.get(data["tokenURL"]).json()  # TODO: 优化请求与超时
+        try:
+            r = requests.get(data["tokenURL"], timeout=120)
+            r.raise_for_status()
+            r = r.json()
+        except requests.exceptions.Timeout:
+            print("Error: Request timed out while trying to get the token.")
+            exit(1)
+        except requests.exceptions.RequestException as e:
+            print(f"Error: An error occurred while trying to get the token: {e}")
+            exit(1)
         if not r.get("success", False):
             print(r)
             exit(1)
@@ -106,7 +115,7 @@ if __name__ == "__main__":
             
         payload = json.dumps(
             {
-                "key": f"{md5}.{file_type}",    # TODO: 多类型文件上传支持
+                "key": (new_filename := f"{md5}.{file_type}"),    # TODO: 多类型文件上传支持
             }
         )
         headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
@@ -121,8 +130,8 @@ if __name__ == "__main__":
             print(response.text)    # TODO: 优化失败处理
             exit(1)
 
-        print(f"{md5}.pdf status: `Pending`")
-        input("Press Enter to continue uploading...")
+        print(f"{new_filename} status: `Pending`")
+        # input("Press Enter to continue uploading...")
 
         temporary_credentials = {
             "AccessKeyId": data["credentials"]["access_key_id"],
@@ -155,7 +164,7 @@ if __name__ == "__main__":
                 },
             )
             print("File uploaded successfully")
-            print(f"\tFile URL: {baseURL}/files/{md5}.pdf")
+            print(f"\tFile URL: {baseURL}/files/{new_filename}")
             print(f"{md5}.pdf status: `Uploaded`")
         except (NoCredentialsError, PartialCredentialsError) as e:
             print(f"Credential error: {e}")
