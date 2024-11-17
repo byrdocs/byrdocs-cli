@@ -145,9 +145,13 @@ def main():
         )
         headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
 
-        response = requests.request(
-            "POST", f"{baseURL}/api/s3/upload", headers=headers, data=payload
-        )
+        try:
+            response = requests.request(
+                "POST", f"{baseURL}/api/s3/upload", headers=headers, data=payload
+            )
+        except Exception as e:
+            print(f"Error while trying to upload file: {e}")
+            exit(1)
 
         upload_response_data = response.json()
 
