@@ -11,6 +11,11 @@ from time import sleep
 import argcomplete
 from tqdm import tqdm
 
+info = lambda s: f"\033[1;94m{s}\033[0m"
+error = lambda s: f"\033[1;31m{s}\033[0m"
+warn = lambda s: f"\033[1;33m{s}\033[0m"
+quote = lambda s: f"\033[37m{s}\033[0m"
+
 command_parser = argparse.ArgumentParser(
     prog="byrdocs",
     description=
@@ -37,23 +42,23 @@ def interrupt_handler(func):
         try:
             return func(*args, **kwargs)
         except KeyboardInterrupt:
-            print("\nOperation cancelled by user.")
+            print(warn("\nOperation cancelled by user."))
             sys.exit(0)
     return wrapper
 
-def retry_handler(error_description: str, max_retries: int=5, interval: int=0):
+def retry_handler(error_description: str, max_retries: int=10, interval: int=0):
     def decorator(func):
         def wrapper(*args, **kwargs):
             for i in range(max_retries):
                 try:
                     return func(*args, **kwargs)
                 except Exception as e:
-                    print(f"{error_description}: {e}")
+                    # print(f"{error_description}: {e}")
                     if i < max_retries - 1:
-                        print(f"Retrying... ({i+1}/{max_retries})")
+                        # print(f"Retrying... ({i+1}/{max_retries})")
                         sleep(interval)
                     else:
-                        print(f"Failed after {max_retries} retries.")
+                        print(error(f"{error_description} Failed after {max_retries} retries: {e}"))
                         sys.exit(1)
         return wrapper
     return decorator
@@ -70,11 +75,11 @@ def get_file_type(file) -> str:
         else:
             return "unsupported"
 
-@retry_handler("Error while requesting to login", interval=1)    # decorator
+@retry_handler("Error while requesting to login.", interval=1)    # decorator
 def request_login_data() -> dict[str, str]:
     return requests.post(f"{baseURL}/api/auth/login").json()
 
-@retry_handler("Error while getting login status")
+@retry_handler("Error while getting login status.")
 def request_token(data: dict[str, str]) -> str:
     try:
         r = requests.get(data["tokenURL"], timeout=120)
@@ -115,23 +120,23 @@ def main():
         if token:
             with token_path.open("w") as f:
                 f.write(token)
-            print(f"Token saved to {token_path.absolute()}")
+            print(info(f"Token saved to {token_path.absolute()}"))
             return
 
         if token_path.exists():
-            print("Token already exists, you can use `byrdocs logout` to remove it.")
+            print(warn("Token already exists, you can use `byrdocs logout` to remove it."))
             exit(1)
 
-        print("No token found locally, requesting a new one...")
+        print(info("No token found locally, requesting a new one..."))
         # token = request_token()
         login_data = request_login_data()
-        print("Please visit the following URL to authorize the application:")
-        print("\t" + login_data["loginURL"])
+        print(info("Please visit the following URL to authorize the application:"))
+        print(quote("\t" + login_data["loginURL"]))
         token = request_token(login_data)
         
         with token_path.open("w") as f:
             f.write(token)
-        print(f"Login successful, token saved to {token_path.absolute()}")
+        print(info(f"Login successful, token saved to {token_path.absolute()}"))
 
     if args.command == 'login':
         login(args.token)
@@ -142,7 +147,7 @@ def main():
 
     if args.command == 'logout':
         os.remove(token_path)
-        print(f"Token removed from {token_path.absolute()}.")
+        print(info(f"Token removed from {token_path.absolute()}."))
         exit(0)
 
     with token_path.open("r") as f:
@@ -150,8 +155,8 @@ def main():
 
     if args.command == 'upload' or args.file:
         if not args.file:
-            print("Error: No file specified for upload.")
-            print("Use `byrdocs -h` for help")
+            print(error("Error: No file specified for upload."))
+            print(warn("Use `byrdocs -h` for help"))
             exit(1)
 
         file = args.file
@@ -160,7 +165,7 @@ def main():
             md5 = hashlib.md5(f.read()).hexdigest()
 
         if (file_type := get_file_type(file)) == "unsupported":
-            print(f"Error: Unsupported file type of {file}, only PDF and ZIP are supported.")
+            print(error(f"Error: Unsupported file type of {file}, only PDF and ZIP are supported."))
             exit(1)
 
         payload = json.dumps(
@@ -175,16 +180,16 @@ def main():
                 "POST", f"{baseURL}/api/s3/upload", headers=headers, data=payload
             )
         except Exception as e:
-            print(f"Error while trying to upload file: {e}")
+            print(error(f"Error while trying to upload file: {e}"))
             exit(1)
 
         upload_response_data = response.json()
 
         if not upload_response_data["success"]:
             try:
-                print(f"Error from server: {response.json()['error']}")    # TODO: 优化失败处理
+                print(error(f"Error from server: {response.json()['error']}"))    # TODO: 优化失败处理
             except:
-                print(f"Unknown error: {response.text}")
+                print(error(f"Unknown error: {response.text}"))
             exit(1)
 
         # print(f"{new_filename} status: `Pending`")
@@ -232,12 +237,13 @@ def main():
                 Config=upload_config
             )
             progress_bar.close()
-            print("File uploaded successfully")
+            print(info("File uploaded successfully"))
             print(f"\tFile URL: {baseURL}/files/{new_filename}")
             # print(f"{new_filename} status: `Uploaded`")
         except (NoCredentialsError, PartialCredentialsError) as e:
             progress_bar.close()
-            print(f"Credential error: {e}")
+            print(error(f"Credential error: {e}"))
         except Exception as e:
             progress_bar.close()
-            print(f"Error uploading file: {e}. \nCheck your file tag, login status and Internet connection, then try again.")
+            print(error(f"Error uploading file: {e}"))
+            print(warn("Check your file tag, login status and Internet connection, then try again."))
