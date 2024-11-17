@@ -7,6 +7,7 @@ version = "0.2.1"
 authors = [
   { name="Rikka", email="rikka@byrdocs.org" },
 ]
+license = {text = "MIT License"}
 description = "A simple command line tool for BYR Docs"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -22,6 +23,9 @@ dependencies = [
     "argcomplete==3.5.1",
     "tqdm==4.67.0"
 ]
+
+[project.urls]
+Homepage = "https://github.com/byrdocs/byrdocs-cli"
 
 [project.scripts]
 byrdocs = "byrdocs:main"
