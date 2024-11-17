@@ -8,6 +8,7 @@ import argparse
 import sys
 import os
 import argcomplete
+from tqdm import tqdm
 
 command_parser = argparse.ArgumentParser(
     prog="byrdocs",
@@ -48,6 +49,10 @@ def get_file_type(file) -> bool:
             return "zip"
         else:
             return "unsupported"
+
+@interrupt_handler
+def upload_progress(chunk, progress_bar: tqdm):
+    progress_bar.update(chunk)
 
 @interrupt_handler
 def main():
@@ -153,7 +158,7 @@ def main():
                 print(f"Unknown error: {response.text}")
             exit(1)
 
-        print(f"{new_filename} status: `Pending`")
+        # print(f"{new_filename} status: `Pending`")
         # input("Press Enter to continue uploading...")
 
         temporary_credentials = {
@@ -176,22 +181,29 @@ def main():
         file_name = file
         object_name = upload_response_data["key"]
         
+        # Initialize progress bar
+        file_size = os.path.getsize(file)
+        progress_bar = tqdm(total=file_size, unit='B', unit_scale=True, desc="Uploading")
 
         try:
             s3_client.upload_file(
                 file_name,
                 bucket_name,
                 object_name,
+                Callback=(lambda chunk: upload_progress(chunk, progress_bar)),
                 ExtraArgs={
                     "Tagging": "&".join(
                         [f"{key}={value}" for key, value in upload_response_data["tags"].items()]
                     )
                 },
             )
+            progress_bar.close()
             print("File uploaded successfully")
             print(f"\tFile URL: {baseURL}/files/{new_filename}")
-            print(f"{new_filename} status: `Uploaded`")
+            # print(f"{new_filename} status: `Uploaded`")
         except (NoCredentialsError, PartialCredentialsError) as e:
+            progress_bar.close()
             print(f"Credential error: {e}")
         except Exception as e:
-            print(f"Error uploading file: {e}. \nCheck your file tag, logging status and Internet connection, then try again.")
+            progress_bar.close()
+            print(f"Error uploading file: {e}. \nCheck your file tag, login status and Internet connection, then try again.")
