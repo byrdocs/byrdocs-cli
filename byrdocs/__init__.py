@@ -38,7 +38,7 @@ def interrupt_handler(func):
             sys.exit(0)
     return wrapper
 
-def get_file_type(file) -> bool:
+def get_file_type(file) -> str:
     # https://en.wikipedia.org/wiki/List_of_file_signatures
     # use magic number to check file type
     with open(file, "rb") as f:
