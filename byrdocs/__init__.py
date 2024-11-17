@@ -84,7 +84,7 @@ def main():
         if token_path.exists():
             print("Token already exists, you can use `byrdocs logout` to remove it.")
             exit(1)
-        
+
         print("No token found locally, requesting a new one...")
         data = requests.post(f"{baseURL}/api/auth/login").json()
         print("Please visit the following URL to authorize the application:")
@@ -113,7 +113,7 @@ def main():
 
     if not token_path.exists():
         login()
-    
+
     if args.command == 'logout':
         os.remove(token_path)
         print(f"Token removed from {token_path.absolute()}.")
@@ -121,7 +121,6 @@ def main():
 
     with token_path.open("r") as f:
         token = f.read().strip()
-
 
     if args.command == 'upload' or args.file:
         if not args.file:
@@ -137,7 +136,7 @@ def main():
         if (file_type := get_file_type(file)) == "unsupported":
             print(f"Error: Unsupported file type of {file}, only PDF and ZIP are supported.")
             exit(1)
-            
+
         payload = json.dumps(
             {
                 "key": (new_filename := f"{md5}.{file_type}"),
@@ -184,10 +183,14 @@ def main():
         bucket_name = upload_response_data["bucket"]
         file_name = file
         object_name = upload_response_data["key"]
-        
+
         # Initialize progress bar
         file_size = os.path.getsize(file)
         progress_bar = tqdm(total=file_size, unit='B', unit_scale=True, desc="Uploading")
+
+        # https://blog.csdn.net/weixin_44123540/article/details/118492260
+        GB = 1024**3
+        upload_config = boto3.s3.transfer.TransferConfig(multipart_threshold=2*GB)
 
         try:
             s3_client.upload_file(
@@ -200,6 +203,7 @@ def main():
                         [f"{key}={value}" for key, value in upload_response_data["tags"].items()]
                     )
                 },
+                Config=upload_config
             )
             progress_bar.close()
             print("File uploaded successfully")
