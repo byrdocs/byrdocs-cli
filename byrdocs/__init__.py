@@ -7,6 +7,7 @@ import pathlib
 import argparse
 import sys
 import os
+from time import sleep
 import argcomplete
 from tqdm import tqdm
 
@@ -29,6 +30,8 @@ command_parser.add_argument("command", nargs='?', help="Command to execute")
 command_parser.add_argument("file", nargs='?', help="Path to the file to upload").completer = argcomplete.completers.FilesCompleter()
 command_parser.add_argument("--token", help="Token for login command")
 
+baseURL = "https://byrdocs.org"
+
 def interrupt_handler(func):
     def wrapper(*args, **kwargs):
         try:
@@ -37,6 +40,23 @@ def interrupt_handler(func):
             print("\nOperation cancelled by user.")
             sys.exit(0)
     return wrapper
+
+def retry_handler(error_description: str, max_retries: int=5, interval: int=0):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            for i in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    print(f"{error_description}: {e}")
+                    if i < max_retries - 1:
+                        print(f"Retrying... ({i+1}/{max_retries})")
+                        sleep(interval)
+                    else:
+                        print(f"Failed after {max_retries} retries.")
+                        sys.exit(1)
+        return wrapper
+    return decorator
 
 def get_file_type(file) -> str:
     # https://en.wikipedia.org/wiki/List_of_file_signatures
@@ -49,6 +69,24 @@ def get_file_type(file) -> str:
             return "zip"
         else:
             return "unsupported"
+
+@retry_handler("Error while requesting to login", interval=1)    # decorator
+def request_login_data() -> dict[str, str]:
+    return requests.post(f"{baseURL}/api/auth/login").json()
+
+@retry_handler("Error while getting login status")
+def request_token(data: dict[str, str]) -> str:
+    try:
+        r = requests.get(data["tokenURL"], timeout=120)
+        r.raise_for_status()
+        r = r.json()
+    except requests.exceptions.Timeout:
+        raise Exception("Request timed out while trying to get the token.")  # raise to retry_handler
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"An error occurred while trying to get the token: {e}")
+    if not r.get("success", False):
+        raise Exception(f"Unknown error: {r}")
+    return r["token"]
 
 @interrupt_handler
 def upload_progress(chunk, progress_bar: tqdm):
@@ -66,7 +104,6 @@ def main():
     if args.file and not args.command:
         args.command = 'upload'
 
-    baseURL = "https://byrdocs.org"
 
     config_dir = pathlib.Path.home() / ".config" / "byrdocs" 
     if not config_dir.exists():
@@ -86,23 +123,12 @@ def main():
             exit(1)
 
         print("No token found locally, requesting a new one...")
-        data = requests.post(f"{baseURL}/api/auth/login").json()
+        # token = request_token()
+        login_data = request_login_data()
         print("Please visit the following URL to authorize the application:")
-        print("\t" + data["loginURL"])
-        try:
-            r = requests.get(data["tokenURL"], timeout=120)
-            r.raise_for_status()
-            r = r.json()
-        except requests.exceptions.Timeout:
-            print("Error: Request timed out while trying to get the token.")
-            exit(1)
-        except requests.exceptions.RequestException as e:
-            print(f"Error: An error occurred while trying to get the token: {e}")
-            exit(1)
-        if not r.get("success", False):
-            print(r)
-            exit(1)
-        token = r["token"]
+        print("\t" + login_data["loginURL"])
+        token = request_token(login_data)
+        
         with token_path.open("w") as f:
             f.write(token)
         print(f"Login successful, token saved to {token_path.absolute()}")
