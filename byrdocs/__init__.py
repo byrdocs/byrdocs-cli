@@ -131,7 +131,7 @@ def main():
         # token = request_token()
         login_data = request_login_data()
         print(info("Please visit the following URL to authorize the application:"))
-        print(quote("\t" + login_data["loginURL"]))
+        print("\t" + login_data["loginURL"])
         token = request_token(login_data)
         
         with token_path.open("w") as f:
