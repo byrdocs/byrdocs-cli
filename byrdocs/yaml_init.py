@@ -1,5 +1,6 @@
-from InquirerPy import inquirer
+from InquirerPy import inquirer, prompt
 import InquirerPy.validator
+from InquirerPy.base.control import Choice
 import yaml
 
 
@@ -13,6 +14,9 @@ metadata: dict[str, str | dict] = {
     "data": data
 }
 
+
+def not_empty(content):
+    return content.strip() != ""
 
 def format_filename(file_name: str) -> str | None:
     file_name = file_name.strip()
@@ -31,7 +35,6 @@ def format_filename(file_name: str) -> str | None:
     return None
 
 def ask_for_init(file_name: str=None) -> str:   # 若需要传入 file_name，需要带上后缀名
-    questions: list[dict[str, str]] = []
     if file_name is None:
         file_name = inquirer.text(
             message="Please enter the file name you got: ",
@@ -42,7 +45,22 @@ def ask_for_init(file_name: str=None) -> str:   # 若需要传入 file_name，�
     metadata["id"] = file_name[:-4]
     metadata["url"] = f"https://byrdocs.org/files/{file_name}"
     
-
+    type: str = inquirer.select(
+        message="Select a file type:",
+        choices=[
+            Choice(value='book', name="书籍"),
+            Choice(value='test', name="试题"),
+            Choice(value='doc', name="资料")
+        ]).execute()
+    metadata['type'] = type
+    
+    if type == 'book':
+        questions = [
+            {"type": "input", "message": "输入书籍标题:", "validate": not_empty, "invalid_message": "请填写一个书籍标题"},
+            {"type": "input", "multiline": True, "message": "输入书籍作者，可输入多个:", "instruction": "可输入多个作者，一行一个，Enter换行，ESC+Enter提交。", "validate": not_empty, "invalid_message": "请填写至少一个作者"},
+            {"type": "input", "multiline": True, "message": "输入译者，可输入多个:", "instruction": "可输入多个译者，一行一个，如没有/未知译者，可省略。Enter换行，ESC+Enter提交。"},
+        ]
+        result = prompt(questions)
 
 
 ask_for_init()
