@@ -92,7 +92,7 @@ def ask_for_init(file_name: str=None) -> str:   # 若需要传入 file_name，�
         file_name = inquirer.text(
             message="Please enter the file name you got: ",
             validate=format_filename,
-            invalid_message="Invaild file name."
+            invalid_message="文件名错误，应为32位的十六进制md5文件名加上文件后缀名 (.pdf/.zip)"
         ).execute()
     file_name = format_filename(file_name)
     metadata["id"] = file_name[:-4]
@@ -121,9 +121,7 @@ def ask_for_init(file_name: str=None) -> str:   # 若需要传入 file_name，�
         result = [str(s).strip() for s in result.values()]
         data = {
             "title": result[0],
-            "authors": to_clear_list(result[1]),
-            "isbn": to_clear_list(result[6]),
-            "filetype": file_name[-3:],
+            "authors": to_clear_list(result[1])
         }
         if not_empty(result[2]):
             data["translators"] = to_clear_list(result[2])
@@ -133,6 +131,8 @@ def ask_for_init(file_name: str=None) -> str:   # 若需要传入 file_name，�
             data["publisher"] = result[4]
         if not_empty(result[5]):
             data["publish_year"] = result[5]
+        data["isbn"] = to_clear_list(result[6])
+        data["filetype"] = file_name[-3:]
             
     
     elif type == 'test':
@@ -142,7 +142,7 @@ def ask_for_init(file_name: str=None) -> str:   # 若需要传入 file_name，�
         pass
     
     metadata["data"] = data
-    print(yaml.dump(metadata, indent=2, allow_unicode=True))
+    print(yaml.dump(metadata, indent=2, sort_keys=False, allow_unicode=True))
 
 # print(to_isbn13("978-7-04-023069-7"))
 # ask_for_init()
