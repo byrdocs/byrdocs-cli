@@ -10,6 +10,7 @@ import os
 from time import sleep
 import argcomplete
 from tqdm import tqdm
+from .yaml_init import ask_for_init
 
 info = lambda s: f"\033[1;94m{s}\033[0m"
 error = lambda s: f"\033[1;31m{s}\033[0m"
@@ -22,7 +23,9 @@ command_parser = argparse.ArgumentParser(
         "Commands:\n" +
         "  upload <file>    Upload a file. If no command is specified, it defaults to upload.\n" +
         "  login            Authenticate with BYR Docs and obtain a token.\n" +
-        "  logout           Remove the locally stored authentication token.\n",
+        "  logout           Remove the locally stored authentication token.\n"+
+        "  init             交互式地生成文件元信息 yaml 文件\n"+
+        "  validate         判断 yaml 元信息文件的合法性\n",
     formatter_class=argparse.RawDescriptionHelpFormatter,
     epilog=
         "Examples:\n" +
@@ -102,12 +105,19 @@ def main():
     argcomplete.autocomplete(command_parser)
     args = command_parser.parse_args()
 
-    if args.command not in ['login', 'logout', 'upload']:
+    if args.command not in ['login', 'logout', 'upload', 'init', 'validate']:
         args.file = args.command
         args.command = 'upload'
 
     if args.file and not args.command:
         args.command = 'upload'
+    
+    if args.command == 'init':
+        ask_for_init()
+        
+    if args.command == 'validate':
+        print(warn("Not implemented yet."))
+        exit(0)
 
 
     config_dir = pathlib.Path.home() / ".config" / "byrdocs" 
