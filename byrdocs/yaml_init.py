@@ -116,6 +116,7 @@ def ask_for_init(file_name: str=None) -> str:   # 若需要传入 file_name，�
             {"type": "input", "message": "输入出版社: ", "instruction": "如未知出版社，可留空。"},
             {"type": "input", "message": "输入出版年份: ", "validate": is_vaild_year, "instruction": "", "invalid_message": "请填写合法的年份。"},
             {"type": "input", "multiline": True, "message": "输入书籍的 ISBN: ", "instruction": "可输入多个 ISBN，一行一个，Enter换行，ESC+Enter提交。", "validate": to_isbn13, "invalid_message": "请填写至少一个合法的 ISBN10 或 ISBN13 编号。"},
+            {"type": "confirm", "message": "是否确认提交 (Enter) ?", "default": True}
         ]
         result = prompt(questions)
         result = [str(s).strip() for s in result.values()]
@@ -142,7 +143,13 @@ def ask_for_init(file_name: str=None) -> str:   # 若需要传入 file_name，�
         pass
     
     metadata["data"] = data
-    print(yaml.dump(metadata, indent=2, sort_keys=False, allow_unicode=True))
+    
+    yaml_content = "# yaml-language-server: $schema=https://byrdocs.org/schema/book.yaml\n\n"
+    yaml_content += yaml.dump(metadata, indent=2, sort_keys=False, allow_unicode=True)
+    with open(f"{metadata['id']}.yaml", "w", encoding="utf-8") as f:
+        f.write(yaml_content)
+    print(f"\033[1;94m\n以下的文件元信息已经存储到 {metadata['id']}.yaml 中。\n\033[0m")
+    print(yaml_content)
 
 # print(to_isbn13("978-7-04-023069-7"))
 # ask_for_init()
