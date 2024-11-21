@@ -132,7 +132,7 @@ def ask_for_init(file_name: str=None) -> str:   # 若需要传入 file_name，�
         if not_empty(result[4]):
             data["publisher"] = result[4]
         if not_empty(result[5]):
-            data["year"] = result[5]
+            data["publish_year"] = result[5]
             
     
     elif type == 'test':
@@ -145,4 +145,4 @@ def ask_for_init(file_name: str=None) -> str:   # 若需要传入 file_name，�
     print(yaml.dump(metadata, indent=2, allow_unicode=True))
 
 # print(to_isbn13("978-7-04-023069-7"))
-ask_for_init()
+# ask_for_init()

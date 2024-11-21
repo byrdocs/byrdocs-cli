@@ -10,7 +10,7 @@ import os
 from time import sleep
 import argcomplete
 from tqdm import tqdm
-from .yaml_init import ask_for_init
+from byrdocs.yaml_init import ask_for_init
 
 info = lambda s: f"\033[1;94m{s}\033[0m"
 error = lambda s: f"\033[1;31m{s}\033[0m"
@@ -99,6 +99,10 @@ def request_token(data: dict[str, str]) -> str:
 @interrupt_handler
 def upload_progress(chunk, progress_bar: tqdm):
     progress_bar.update(chunk)
+    
+@interrupt_handler
+def _ask_for_init(file_name: str=None) -> str:
+    ask_for_init(file_name)
 
 @interrupt_handler
 def main():
@@ -113,7 +117,7 @@ def main():
         args.command = 'upload'
     
     if args.command == 'init':
-        ask_for_init()
+        _ask_for_init()
         
     if args.command == 'validate':
         print(warn("Not implemented yet."))
