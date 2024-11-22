@@ -308,10 +308,48 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
             data['time']['stage'] = result['stage']
         data['filetype'] = file_name[-3:]
         data['content'] = result['content']
-        
 
     else:  # doc
-        pass
+        questions = [
+            {
+                "name": "title",
+                "type": "input",
+                "message": "输入资料标题:",
+                "instruction": "自行总结一个合适的标题",
+                "validate": not_empty,
+                "invalid_message": "必填。",
+            },
+            {
+                "name": "course_type",
+                "type": "rawlist",
+                "message": "选择资料适用的学段：",
+                "choices": ["本科", "研究生", Choice(value=None, name="未知")],
+            },
+            {
+                "name": "course_name",
+                "type": "input",
+                "message": "输入资料对应课程的全称：",
+                "instruction": "需要包括字母和括号中的内容，比如「高等数学A（上）」",
+                "validate": not_empty,
+                "invalid_message": "请填写课程全称，必填。",
+            },
+            {
+                "name": "content",
+                "type": "rawlist",
+                "message": "选择一个或多个资料类型：",
+                "instruction": "选定选项后, 按下空格以多选。",
+                "choices": ["思维导图", "题库", "答案", "知识点", "课件"],
+                "multiselect": True,
+            },
+            {"type": "confirm", "message": "是否确认提交 (Enter) ?", "default": True},
+        ]
+        result = prompt(questions)
+        # result = {k: str(v).strip() for k, v in result.items()}
+        data = {"title": result['title'].strip(), "filetype": file_name[-3:], "course": {}, "content": result['content']}
+        if result['course_type'] is not None:
+            data['course']['type'] = result['course_type']
+        data['course']['name'] = result['course_name'].strip()
+        
 
     metadata["data"] = data
 
