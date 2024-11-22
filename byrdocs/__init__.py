@@ -176,8 +176,15 @@ def main():
 
         file = args.file
 
-        with open(file, "rb") as f:
-            md5 = hashlib.md5(f.read()).hexdigest()
+        try:
+            with open(file, "rb") as f:
+                md5 = hashlib.md5(f.read()).hexdigest()
+        except FileNotFoundError:
+            print(error(f"未找到文件: {file}"))
+            exit(1)
+        except Exception as e:
+            print(error(f"Error while reading file: {e}"))
+            exit(1)
 
         if (file_type := get_file_type(file)) == "unsupported":
             print(error(f"Error: Unsupported file type of {file}, only PDF and ZIP are supported."))
