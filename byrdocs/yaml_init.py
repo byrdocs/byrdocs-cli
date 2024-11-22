@@ -263,19 +263,20 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
             {
                 "name": "content",
                 "type": "rawlist",
-                "message": "是原题还是答案？",
-                "instruction": "如果只有答案而没有题面，不能算作「原题」。如果答案不能涵盖绝大多数题目，不能算作「答案」。如果题目、答案都显著不全，这样的文件不应当被收录。",
+                "message": "是原题还是答案, 还是均有？",
+                "instruction": "选定选项后, 按下空格以多选。如果只有答案而没有题面，不能算作「原题」。如果答案不能涵盖绝大多数题目，不能算作「答案」。如果题目、答案都显著不全，这样的文件不应当被收录。",
                 "choices": [
                     Choice(value="原题", name="原题"),
                     Choice(value="答案", name="答案"),
-                ]
+                ],
+                "multiselect": True
             },
             {"type": "confirm", "message": "是否确认提交 (Enter) ?", "default": True}
         ]
         result: dict = prompt(questions)
         print(result)
         # result = [str(s).strip() for s in result.values()]
-        result = {k: str(v).strip() for k, v in result.items()}
+        # result = {k: str(v).strip() for k, v in result.items()}
         data = {}
         if not_empty(result['college']):
             data['college'] = to_clear_list(result['college'])
@@ -283,9 +284,9 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
         data['time'] = {}
         if result['course_type'] is not None:
             data['course']['type'] = result['course_type']
-        data['course']['name'] = result['course_name']
-        data['time']['start'] = result['time_start']
-        data['time']['end'] = result['time_end']
+        data['course']['name'] = result['course_name'].strip()
+        data['time']['start'] = result['time_start'].strip()
+        data['time']['end'] = result['time_end'].strip()
         if result['semester'] is not None:
             data['time']['semester'] = result['semester']
         if result['stage'] is not None:
