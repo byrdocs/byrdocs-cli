@@ -10,6 +10,22 @@ data: dict[str, str | dict] = {}
 metadata: dict[str, str | dict] = {"id": "", "url": "", "type": "", "data": data}
 
 
+college = ["信息与通信工程学院", "电子工程学院", "计算机学院（国家示范性软件学院）",
+      "网络空间安全学院", "人工智能学院", "智能工程与自动化学院", "集成电路学院",
+      "经济管理学院", "理学院", "未来学院", "人文学院", "数字媒体与设计艺术学院",
+      "马克思主义学院", "国际学院", "应急管理学院", "网络教育学院（继续教育学院）",
+      "玛丽女王海南学院", "体育部", "卓越工程师学院"]
+college_completer = {s: None for s in college}
+def college_validate(content):
+    content = content.strip()
+    if content == "":
+        return True  # 可留空
+    inputs = [s for s in content.split("\n") if s != ""]
+    for s in inputs:
+        if s not in college:
+            return False
+    return True
+
 def not_empty(content):
     return content.strip() != ""
 
@@ -104,7 +120,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
     metadata["id"] = file_name[:-4]
     metadata["url"] = f"https://byrdocs.org/files/{file_name}"
 
-    type: str = inquirer.select(
+    type: str = inquirer.rawlist(
         message="Select a file type:",
         choices=[
             Choice(value="book", name="书籍"),
@@ -180,7 +196,87 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
         data["filetype"] = file_name[-3:]
 
     elif type == "test":
-        pass
+        questions = [
+            {
+                "name": "college",
+                "type": "input",
+                "message": "输入考试的学院：",
+                "instruction": "可输入多个学院，一行一个。只有当你确认「此学院在当时实际考过这份考卷」时，才可以填写这个学院。如无法确认，应当不填。Tab补全，Enter换行，ESC+Enter提交。",
+                "completer": college_completer,
+                "multiline": True,
+                "validate": college_validate,
+                "invalid_message": "请填写合法的学院全名，可用方向键移动光标，按Tab补全为全名。",
+                "transformer": lambda content: to_clear_list(content)
+            },
+            {
+                "name": "course",
+                "type": "rawlist",
+                "message": "选择考试的学段：",
+                "choices": [
+                    "本科",
+                    "研究生",
+                    Choice(value=None, name="未知")
+                ]
+            }, 
+            {
+                "name": "name",
+                "type": "input",
+                "message": "输入考试对应课程的全称：",  
+                "instruction": "需要包括字母和括号中的内容，比如「高等数学A（上）」",
+                "validate": not_empty,
+                "invalid_message": "请填写课程全称，必填。"
+            },
+            {
+                "name": "time_start",
+                "type": "input",
+                "message": "填写学年开始的年份：",
+                "instruction": "例如 2023-2024 学年，应当填写 2023。如果只能精确到某一年，填写该年份即可。",
+                "validate": is_vaild_year,
+                "invalid_message": "请填写合法的年份。完全不知道年份的试题是不应该收录的。"
+            },
+            {
+                "name": "time_end",
+                "type": "input",
+                "message": "填写学年结束的年份：",
+                "instruction": "例如 2023-2024 学年，应当填写 2024。如果只能精确到某一年，填写该年份即可。",
+                "validate": is_vaild_year,
+                "invalid_message": "请填写合法的年份。完全不知道年份的试题是不应该收录的。"
+            },
+            {
+                "name": "stage",
+                "type": "rawlist",
+                "message": "选择考试所在的学期：",
+                "choices": [
+                    Choice(value="First", name="第一学期"),
+                    Choice(value="Second", name="第二学期"),
+                    Choice(value="None", name="未知")
+                ]
+            },
+            {
+                "name": "stage",
+                "type": "rawlist",
+                "message": "是期中还是期末考试？",
+                "choices": [
+                    Choice(value="期中", name="期中"),
+                    Choice(value="期末", name="期末"),
+                    Choice(value="None", name="未知")
+                ]
+            },
+            {
+                "name": "content",
+                "type": "rawlist",
+                "message": "是原题还是答案？",
+                "instruction": "如果只有答案而没有题面，不能算作「原题」。如果答案不能涵盖绝大多数题目，不能算作「答案」。如果题目、答案都显著不全，这样的文件不应当被收录。",
+                "choices": [
+                    Choice(value="原题", name="原题"),
+                    Choice(value="答案", name="答案"),
+                ]
+            },
+            {"type": "confirm", "message": "是否确认提交 (Enter) ?", "default": True}
+        ]
+        
+        result = prompt(questions)
+        print(result)
 
     else:  # doc
         pass
