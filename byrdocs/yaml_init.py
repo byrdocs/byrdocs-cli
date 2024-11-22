@@ -10,19 +10,19 @@ data: dict[str, str | dict] = {}
 metadata: dict[str, str | dict] = {"id": "", "url": "", "type": "", "data": data}
 
 
-college = ["信息与通信工程学院", "电子工程学院", "计算机学院（国家示范性软件学院）",
+colleges = ["信息与通信工程学院", "电子工程学院", "计算机学院（国家示范性软件学院）",
       "网络空间安全学院", "人工智能学院", "智能工程与自动化学院", "集成电路学院",
       "经济管理学院", "理学院", "未来学院", "人文学院", "数字媒体与设计艺术学院",
       "马克思主义学院", "国际学院", "应急管理学院", "网络教育学院（继续教育学院）",
       "玛丽女王海南学院", "体育部", "卓越工程师学院"]
-college_completer = {s: None for s in college}
+college_completer = {s: None for s in colleges}
 def college_validate(content):
     content = content.strip()
     if content == "":
         return True  # 可留空
-    inputs = [s for s in content.split("\n") if s != ""]
+    inputs = to_clear_list(content)
     for s in inputs:
-        if s not in college:
+        if s not in colleges:
             return False
     return True
 
@@ -103,6 +103,7 @@ def to_clear_list(content: str) -> list[str]:
     content: list = content.strip().split("\n")
     content = [s.strip() for s in content]
     content = list(set(filter(None, content)))
+    return content
 
 
 def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，需要带上后缀名
@@ -228,7 +229,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "type": "input",
                 "message": "填写学年开始的年份：",
                 "instruction": "例如 2023-2024 学年，应当填写 2023。如果只能精确到某一年，填写该年份即可。",
-                "validate": is_vaild_year and not_empty,
+                "validate": lambda y: is_vaild_year(y) and not_empty(y),
                 "invalid_message": "请填写合法的年份。完全不知道年份的试题是不应该收录的。"
             },
             {
@@ -236,11 +237,11 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "type": "input",
                 "message": "填写学年结束的年份：",
                 "instruction": "例如 2023-2024 学年，应当填写 2024。如果只能精确到某一年，填写该年份即可。",
-                "validate": is_vaild_year and not_empty,
+                "validate": lambda y: is_vaild_year(y) and not_empty(y),
                 "invalid_message": "请填写合法的年份。完全不知道年份的试题是不应该收录的。"
             },
             {
-                "name": "stage",
+                "name": "semester",
                 "type": "rawlist",
                 "message": "选择考试所在的学期：",
                 "choices": [
@@ -271,20 +272,23 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
             },
             {"type": "confirm", "message": "是否确认提交 (Enter) ?", "default": True}
         ]
-        result = prompt(questions)
-        # print(result)
-        result = [str(s).strip() for s in result.values()]
+        result: dict = prompt(questions)
+        print(result)
+        # result = [str(s).strip() for s in result.values()]
+        result = {k: str(v).strip() for k, v in result.items()}
         data = {}
         if not_empty(result['college']):
             data['college'] = to_clear_list(result['college'])
+        data['course'] = {}
+        data['time'] = {}
         if result['course_type'] is not None:
             data['course']['type'] = result['course_type']
         data['course']['name'] = result['course_name']
         data['time']['start'] = result['time_start']
         data['time']['end'] = result['time_end']
-        if data['semester'] is not None:
+        if result['semester'] is not None:
             data['time']['semester'] = result['semester']
-        if data['stage'] is not None:
+        if result['stage'] is not None:
             data['time']['stage'] = result['stage']
         data['filetype'] = file_name[-3:]
         data['content'] = result['content']
