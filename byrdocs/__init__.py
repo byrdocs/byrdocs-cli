@@ -261,6 +261,13 @@ def main():
             progress_bar.close()
             print(info("File uploaded successfully"))
             print(f"\tFile URL: {baseURL}/files/{new_filename}")
+            
+            try:
+                input(info("按下 Enter 直接对该文件进行元信息录入，按下 Ctrl+C 退出 CLI。"))
+                _ask_for_init(new_filename)
+            except KeyboardInterrupt:
+                print(info("操作取消。"))
+                exit(0)
             # print(f"{new_filename} status: `Uploaded`")
         except (NoCredentialsError, PartialCredentialsError) as e:
             progress_bar.close()
