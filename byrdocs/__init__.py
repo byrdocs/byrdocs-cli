@@ -118,6 +118,7 @@ def main():
     
     if args.command == 'init':
         _ask_for_init()
+        exit(0)
         
     if args.command == 'validate':
         print(warn("Not implemented yet."))
