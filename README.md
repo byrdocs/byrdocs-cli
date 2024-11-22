@@ -30,6 +30,8 @@ Commands:
   upload <file>    Upload a file. If no command is specified, it defaults to upload.
   login            Authenticate with BYR Docs and obtain a token.
   logout           Remove the locally stored authentication token.
+  init             交互式地生成文件元信息 yaml 文件
+  validate         (施工中) 判断 yaml 元信息文件的合法性
 
 positional arguments:
   command        Command to execute
@@ -43,6 +45,7 @@ Examples:
  $ byrdocs login
  $ byrdocs /home/exam_paper.pdf
  $ byrdocs logout
+ $ byrdocs init
 ```
 
 ## Development
