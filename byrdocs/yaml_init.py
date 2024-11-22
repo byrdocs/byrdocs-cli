@@ -99,15 +99,10 @@ def format_filename(file_name: str) -> str | None:
 
 
 def to_clear_list(content: str) -> list[str]:
-    content: list = content.strip().split("\n")
     # remove duplicate and empty
+    content: list = content.strip().split("\n")
+    content = [s.strip() for s in content]
     content = list(set(filter(None, content)))
-    result = []
-    for element in content:
-        element = element.strip()
-        if element != "":
-            result.append(element)
-    return result
 
 
 def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，需要带上后缀名
