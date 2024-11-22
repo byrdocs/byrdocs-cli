@@ -99,7 +99,9 @@ def format_filename(file_name: str) -> str | None:
 
 
 def to_clear_list(content: str) -> list[str]:
-    content = content.strip().split("\n")
+    content: list = content.strip().split("\n")
+    # remove duplicate and empty
+    content = list(set(filter(None, content)))
     result = []
     for element in content:
         element = element.strip()
