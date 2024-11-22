@@ -209,7 +209,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "transformer": lambda content: to_clear_list(content)
             },
             {
-                "name": "course",
+                "name": "course_type",
                 "type": "rawlist",
                 "message": "选择考试的学段：",
                 "choices": [
@@ -219,7 +219,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 ]
             }, 
             {
-                "name": "name",
+                "name": "course_name",
                 "type": "input",
                 "message": "输入考试对应课程的全称：",  
                 "instruction": "需要包括字母和括号中的内容，比如「高等数学A（上）」",
@@ -249,7 +249,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "choices": [
                     Choice(value="First", name="第一学期"),
                     Choice(value="Second", name="第二学期"),
-                    Choice(value="None", name="未知")
+                    Choice(value=None, name="未知")
                 ]
             },
             {
@@ -259,7 +259,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "choices": [
                     Choice(value="期中", name="期中"),
                     Choice(value="期末", name="期末"),
-                    Choice(value="None", name="未知")
+                    Choice(value=None, name="未知")
                 ]
             },
             {
@@ -274,9 +274,24 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
             },
             {"type": "confirm", "message": "是否确认提交 (Enter) ?", "default": True}
         ]
-        
         result = prompt(questions)
-        print(result)
+        # print(result)
+        result = [str(s).strip() for s in result.values()]
+        data = {}
+        if not_empty(result['college']):
+            data['college'] = to_clear_list(result['college'])
+        if result['course_type'] is not None:
+            data['course']['type'] = result['course_type']
+        data['course']['name'] = result['course_name']
+        data['time']['start'] = result['time_start']
+        data['time']['end'] = result['time_end']
+        if data['semester'] is not None:
+            data['time']['semester'] = result['semester']
+        if data['stage'] is not None:
+            data['time']['stage'] = result['stage']
+        data['filetype'] = file_name[-3:]
+        data['content'] = result['content']
+        
 
     else:  # doc
         pass
