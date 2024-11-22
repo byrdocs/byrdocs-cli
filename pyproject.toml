@@ -24,7 +24,8 @@ dependencies = [
     "tqdm==4.67.0",
     "InquirerPy==0.3.4",
     "pyyaml==5.3.1",
-    "isbnlib==3.10.14"
+    "isbnlib==3.10.14",
+    "pinyin==0.4.0"
 ]
 
 [project.urls]

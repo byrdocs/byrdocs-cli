@@ -1,6 +1,9 @@
 from InquirerPy import inquirer, prompt
 from InquirerPy.base.control import Choice
+from prompt_toolkit.completion import Completer, Completion
+from prompt_toolkit.document import Document
 import yaml
+import pinyin
 import isbnlib
 
 
@@ -10,11 +13,15 @@ data: dict[str, str | dict] = {}
 metadata: dict[str, str | dict] = {"id": "", "url": "", "type": "", "data": data}
 
 
+def get_pinyin(text):
+    return pinyin.get(text, format="strip", delimiter=" ")
+
 colleges = ["信息与通信工程学院", "电子工程学院", "计算机学院（国家示范性软件学院）",
       "网络空间安全学院", "人工智能学院", "智能工程与自动化学院", "集成电路学院",
       "经济管理学院", "理学院", "未来学院", "人文学院", "数字媒体与设计艺术学院",
       "马克思主义学院", "国际学院", "应急管理学院", "网络教育学院（继续教育学院）",
       "玛丽女王海南学院", "体育部", "卓越工程师学院"]
+colleges_pinyin = {c: get_pinyin(c) for c in colleges}
 college_completer = {s: None for s in colleges}
 def college_validate(content):
     content = content.strip()
@@ -25,6 +32,14 @@ def college_validate(content):
         if s not in colleges:
             return False
     return True
+
+class CollageCompleter(Completer):
+    def get_completions(self, document: Document, complete_event):
+        input_pinyin = get_pinyin(document.text)
+        input_pinyin = input_pinyin.replace(" ", "")
+        suggestions = [college for college, pinyin_name in colleges_pinyin.items() if pinyin_name.replace(" ", "").startswith(input_pinyin)]
+        for suggestion in suggestions:
+            yield Completion(suggestion, start_position=-len(input_pinyin))
 
 def not_empty(content):
     return content.strip() != ""
@@ -200,7 +215,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "type": "input",
                 "message": "输入考试的学院：",
                 "instruction": "可输入多个学院，一行一个。只有当你确认「此学院在当时实际考过这份考卷」时，才可以填写这个学院。如无法确认，应当不填。Tab补全，Enter换行，ESC+Enter提交。",
-                "completer": college_completer,
+                "completer": CollageCompleter(),
                 "multiline": True,
                 "validate": college_validate,
                 "invalid_message": "请填写合法的学院全名，可用方向键移动光标，按Tab补全为全名。",
@@ -274,7 +289,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
             {"type": "confirm", "message": "是否确认提交 (Enter) ?", "default": True}
         ]
         result: dict = prompt(questions)
-        print(result)
+        # print(result)
         # result = [str(s).strip() for s in result.values()]
         # result = {k: str(v).strip() for k, v in result.items()}
         data = {}
