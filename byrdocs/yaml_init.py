@@ -239,7 +239,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "type": "input",
                 "message": "填写学年结束的年份：",
                 "instruction": "例如 2023-2024 学年，应当填写 2024。如果只能精确到某一年，填写该年份即可。",
-                "validate": is_vaild_year,
+                "validate": is_vaild_year and not_empty,
                 "invalid_message": "请填写合法的年份。完全不知道年份的试题是不应该收录的。"
             },
             {
