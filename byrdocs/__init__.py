@@ -25,13 +25,14 @@ command_parser = argparse.ArgumentParser(
         "  login            Authenticate with BYR Docs and obtain a token.\n" +
         "  logout           Remove the locally stored authentication token.\n"+
         "  init             交互式地生成文件元信息 yaml 文件\n"+
-        "  validate         判断 yaml 元信息文件的合法性\n",
+        "  validate         (施工中) 判断 yaml 元信息文件的合法性\n",
     formatter_class=argparse.RawDescriptionHelpFormatter,
     epilog=
         "Examples:\n" +
         f"{' $ byrdocs login'}\n" +
         f"{' $ byrdocs /home/exam_paper.pdf'}\n" +
         f"{' $ byrdocs logout'}\n"
+        f"{' $ byrdocs init'}\n"
         )
 # command_parser.add_argument('--help', '-h', action='help', help='Show this help message and exit')
 command_parser.add_argument("command", nargs='?', help="Command to execute")
