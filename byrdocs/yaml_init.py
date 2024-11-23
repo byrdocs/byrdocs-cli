@@ -172,6 +172,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "message": "输入书籍作者，可输入多个:",
                 "instruction": "可输入多个作者，一行一个，Enter换行，ESC+Enter提交。",
                 "validate": not_empty,
+                "transformer": to_clear_list,
                 "invalid_message": "请填写至少一个作者",
             },
             {
@@ -179,18 +180,19 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "multiline": True,
                 "message": "输入译者，可输入多个:",
                 "instruction": "可输入多个译者，一行一个，如没有/未知译者，可省略。Enter换行，ESC+Enter提交。",
+                "transformer": to_clear_list,
             },
             {
                 "type": "input",
                 "message": "输入书籍的版本: ",
-                "instruction": "一个数字，如未知版次，可留空。",
+                "instruction": "一个数字，如未知版次，可留空。\n",
                 "validate": lambda e: to_vaild_edition(e) is not None,
                 "invalid_message": "请填写合法的版次。",
             },
             {
                 "type": "input",
                 "message": "输入出版社: ",
-                "instruction": "如未知出版社，可留空。",
+                "instruction": "如未知出版社，可留空。\n",
             },
             {
                 "type": "input",
@@ -205,6 +207,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "message": "输入书籍的 ISBN: ",
                 "instruction": "可输入多个 ISBN，一行一个，Enter换行，ESC+Enter提交。",
                 "validate": to_isbn13,
+                "transformer": to_clear_list,
                 "invalid_message": "请填写至少一个合法的 ISBN10 或 ISBN13 编号。",
             },
             {"name": "confirm", "type": "confirm", "message": "是否确认提交?", "default": True},
@@ -254,7 +257,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "name": "course_name",
                 "type": "input",
                 "message": "输入考试对应课程的全称：",  
-                "instruction": "需要包括字母和括号中的内容，比如「高等数学A（上）」",
+                "instruction": "需要包括字母和括号中的内容，比如「高等数学A（上）」\n",
                 "validate": not_empty,
                 "invalid_message": "请填写课程全称，必填。"
             }
@@ -262,13 +265,13 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
         result1 = prompt(questions1)
         time_start = inquirer.text(
             message="填写学年开始的年份：",
-            instruction="例如 2023-2024 学年，应当填写 2023。如果只能精确到某一年，填写该年份即可。",
+            instruction="例如 2023-2024 学年，应当填写 2023。如果只能精确到某一年，填写该年份即可。\n",
             validate = lambda y: is_vaild_year(y) and not_empty(y),
             invalid_message="请填写合法的年份。完全不知道年份的试题是不应该收录的。",
         ).execute()
         time_end = inquirer.text(
             message="填写学年结束的年份：",
-            instruction="例如 2023-2024 学年，应当填写 2024。如果只能精确到某一年，填写该年份即可。",
+            instruction="例如 2023-2024 学年，应当填写 2024。如果只能精确到某一年，填写该年份即可。\n",
             validate = lambda y: valid_year_period(time_start, y),
             invalid_message="请填写合法的年份。跨度仅能是 0 或 1 年。",
         ).execute()
@@ -297,7 +300,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "name": "content",
                 "type": "rawlist",
                 "message": "是原题还是答案, 还是均有？",
-                "instruction": "选定选项后, 按下空格以多选。如果只有答案而没有题面，不能算作「原题」。如果答案不能涵盖绝大多数题目，不能算作「答案」。如果题目、答案都显著不全，这样的文件不应当被收录。",
+                "instruction": "选定选项后, 按下空格以多选。如果只有答案而没有题面，不能算作「原题」。如果答案不能涵盖绝大多数题目，不能算作「答案」。如果题目、答案都显著不全，这样的文件不应当被收录。\n",
                 "choices": [
                     Choice(value="原题", name="原题"),
                     Choice(value="答案", name="答案"),
@@ -337,7 +340,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "name": "title",
                 "type": "input",
                 "message": "输入资料标题:",
-                "instruction": "自行总结一个合适的标题",
+                "instruction": "自行总结一个合适的标题\n",
                 "validate": not_empty,
                 "invalid_message": "必填。",
             },
@@ -351,7 +354,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "name": "course_name",
                 "type": "input",
                 "message": "输入资料对应课程的全称：",
-                "instruction": "需要包括字母和括号中的内容，比如「高等数学A（上）」",
+                "instruction": "需要包括字母和括号中的内容，比如「高等数学A（上）」\n",
                 "validate": not_empty,
                 "invalid_message": "请填写课程全称，必填。",
             },
@@ -359,7 +362,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "name": "content",
                 "type": "rawlist",
                 "message": "选择一个或多个资料类型：",
-                "instruction": "选定选项后, 按下空格以多选。",
+                "instruction": "选定选项后, 按下空格以多选。\n",
                 "choices": ["思维导图", "题库", "答案", "知识点", "课件"],
                 "multiselect": True,
             },
