@@ -10,7 +10,7 @@ import os
 from time import sleep
 import argcomplete
 from tqdm import tqdm
-from byrdocs.yaml_init import ask_for_init
+from byrdocs.yaml_init import ask_for_init, ask_for_confirmation, cancel    # TODO: 进行模块拆分便于维护，而不是全从这里导入进来
 
 info = lambda s: f"\033[1;94m{s}\033[0m"
 error = lambda s: f"\033[1;31m{s}\033[0m"
@@ -264,11 +264,12 @@ def main():
             print(f"\tFile URL: {baseURL}/files/{new_filename}")
             
             try:
-                input(info("按下 Enter 直接对该文件进行元信息录入，按下 Ctrl+C 退出 CLI。"))
-                _ask_for_init(new_filename)
+                if ask_for_confirmation("是否直接对该文件进行元信息录入？"):
+                    _ask_for_init(new_filename)
+                else:
+                    cancel()
             except KeyboardInterrupt:
-                print(info("操作取消。"))
-                exit(0)
+                cancel()
             # print(f"{new_filename} status: `Uploaded`")
         except (NoCredentialsError, PartialCredentialsError) as e:
             progress_bar.close()

@@ -38,6 +38,10 @@ def college_validate(content):
             return False
     return True
 
+def ask_for_confirmation(prompt: str="确定提交？") -> bool:
+    result = inquirer.confirm(prompt, default=True).execute()
+    return result
+
 
 class CollageCompleter(Completer):
     def get_completions(self, document: Document, complete_event):
@@ -141,8 +145,8 @@ def to_clear_list(content: str) -> list[str]:
     return content
 
 
-def cancel() -> None:
-    print("已取消")
+def cancel(text="已取消。") -> None:
+    print(f"\033[1;33m{text}\033[0m")
     exit(0)
 
 
@@ -242,11 +246,9 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "transformer": to_clear_list,
                 "invalid_message": "请填写至少一个合法的 ISBN-10 或 ISBN-13",
             },
-            {"name": "confirm", "type": "confirm", "message": "确认提交?",
-                "default": True, "mandatory": False},
         ]
         result = prompt(questions)
-        if result["confirm"]:
+        if ask_for_confirmation():
             result = [str(s).strip() for s in result.values()]
             data = {"title": result[0], "authors": to_clear_list(result[1])}
             if not_empty(result[2]):
@@ -355,7 +357,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
         # print(result)
         # result = [str(s).strip() for s in result.values()]
         # result = {k: str(v).strip() for k, v in result.items()}
-        if result['confirm']:
+        if ask_for_confirmation():
             data = {}
             if not_empty(result['college']):
                 data['college'] = to_clear_list(result['college'])
@@ -415,7 +417,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
         ]
         result = prompt(questions)
         # result = {k: str(v).strip() for k, v in result.items()}
-        if result['confirm']:
+        if ask_for_confirmation:
             data = {"title": result['title'].strip(
             ), "filetype": file_name[-3:], "course": {}, "content": result['content']}
             if result['course_type'] is not None:
