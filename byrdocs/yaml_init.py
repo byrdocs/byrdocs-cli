@@ -53,8 +53,12 @@ class CollageCompleter(Completer):
             yield Completion(suggestion, start_position=-len(input_pinyin))
 
 
-def not_empty(content):
-    return content.strip() != ""
+def not_empty(content: str | list):
+    if type(content) is str:
+        return content.strip() != ""
+    if type(content) is list:
+        return content != []
+    return bool(content)
 
 
 def is_vaild_year(year: str) -> bool:
@@ -347,10 +351,9 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                     Choice(value="原题", name="原题"),
                     Choice(value="答案", name="答案"),
                 ],
-                "mandatory_message": "必填",
-            },
-            {"name": "confirm", "type": "confirm", "message": "确认提交?",
-                "default": True, "mandatory": False},
+                "validate": not_empty,
+                "invalid_message": "必填"
+            }
         ]
         result2: dict = prompt(questions2)
         result = {**result1, **result2}
@@ -410,10 +413,9 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "message": "选择一个或多个资料类型：",
                 "long_instruction": "空格以选择，回车以提交",
                 "choices": ["思维导图", "题库", "答案", "知识点", "课件"],
-                "mandatory_message": "必填",
-            },
-            {"name": "confirm", "type": "confirm", "message": "确认提交?",
-                "default": True, "mandatory": False},
+                "validate": not_empty,
+                "invalid_message": "必填",
+            }
         ]
         result = prompt(questions)
         # result = {k: str(v).strip() for k, v in result.items()}
@@ -435,7 +437,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                               sort_keys=False, allow_unicode=True)
     with open(f"{metadata['id']}.yml", "w", encoding="utf-8") as f:
         f.write(yaml_content)
-    print()
+    # print()
     print(yaml_content)
     print(f"\n\033[1;32m✔ 已写入 {metadata['id']}.yml\033[0m")
 

@@ -46,7 +46,7 @@ def interrupt_handler(func):
         try:
             return func(*args, **kwargs)
         except KeyboardInterrupt:
-            print(warn("\nOperation cancelled by user."))
+            cancel()
             sys.exit(0)
     return wrapper
 
