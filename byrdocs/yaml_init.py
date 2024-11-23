@@ -121,6 +121,11 @@ def to_clear_list(content: str) -> list[str]:
     return content
 
 
+def cancel() -> None:
+    print("已取消提交。")
+    exit(0)
+
+
 def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，需要带上后缀名
     global metadata
     if file_name is None:
@@ -192,21 +197,25 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "validate": to_isbn13,
                 "invalid_message": "请填写至少一个合法的 ISBN10 或 ISBN13 编号。",
             },
-            {"type": "confirm", "message": "是否确认提交 (Enter) ?", "default": True},
+            {"name": "confirm", "type": "confirm", "message": "是否确认提交?", "default": True},
         ]
         result = prompt(questions)
-        result = [str(s).strip() for s in result.values()]
-        data = {"title": result[0], "authors": to_clear_list(result[1])}
-        if not_empty(result[2]):
-            data["translators"] = to_clear_list(result[2])
-        if not_empty(result[3]):
-            data["edition"] = to_vaild_edition(result[3])
-        if not_empty(result[4]):
-            data["publisher"] = result[4]
-        if not_empty(result[5]):
-            data["publish_year"] = result[5]
-        data["isbn"] = to_clear_list(result[6])
-        data["filetype"] = file_name[-3:]
+        if result["confirm"]:
+            result = [str(s).strip() for s in result.values()]
+            data = {"title": result[0], "authors": to_clear_list(result[1])}
+            if not_empty(result[2]):
+                data["translators"] = to_clear_list(result[2])
+            if not_empty(result[3]):
+                data["edition"] = to_vaild_edition(result[3])
+            if not_empty(result[4]):
+                data["publisher"] = result[4]
+            if not_empty(result[5]):
+                data["publish_year"] = result[5]
+            data["isbn"] = to_clear_list(result[6])
+            data["filetype"] = file_name[-3:]
+        else:
+            cancel()
+            
 
     elif type == "test":
         questions = [
@@ -286,28 +295,31 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 ],
                 "multiselect": True
             },
-            {"type": "confirm", "message": "是否确认提交 (Enter) ?", "default": True}
+            {"name": "confirm", "type": "confirm", "message": "是否确认提交?", "default": True}
         ]
         result: dict = prompt(questions)
         # print(result)
         # result = [str(s).strip() for s in result.values()]
         # result = {k: str(v).strip() for k, v in result.items()}
-        data = {}
-        if not_empty(result['college']):
-            data['college'] = to_clear_list(result['college'])
-        data['course'] = {}
-        data['time'] = {}
-        if result['course_type'] is not None:
-            data['course']['type'] = result['course_type']
-        data['course']['name'] = result['course_name'].strip()
-        data['time']['start'] = result['time_start'].strip()
-        data['time']['end'] = result['time_end'].strip()
-        if result['semester'] is not None:
-            data['time']['semester'] = result['semester']
-        if result['stage'] is not None:
-            data['time']['stage'] = result['stage']
-        data['filetype'] = file_name[-3:]
-        data['content'] = result['content']
+        if result['confirm']:
+            data = {}
+            if not_empty(result['college']):
+                data['college'] = to_clear_list(result['college'])
+            data['course'] = {}
+            data['time'] = {}
+            if result['course_type'] is not None:
+                data['course']['type'] = result['course_type']
+            data['course']['name'] = result['course_name'].strip()
+            data['time']['start'] = result['time_start'].strip()
+            data['time']['end'] = result['time_end'].strip()
+            if result['semester'] is not None:
+                data['time']['semester'] = result['semester']
+            if result['stage'] is not None:
+                data['time']['stage'] = result['stage']
+            data['filetype'] = file_name[-3:]
+            data['content'] = result['content']
+        else:
+            cancel()
 
     else:  # doc
         questions = [
@@ -341,14 +353,17 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "choices": ["思维导图", "题库", "答案", "知识点", "课件"],
                 "multiselect": True,
             },
-            {"type": "confirm", "message": "是否确认提交 (Enter) ?", "default": True},
+            {"name": "comfirm" ,"type": "confirm", "message": "是否确认提交?", "default": True},
         ]
         result = prompt(questions)
         # result = {k: str(v).strip() for k, v in result.items()}
-        data = {"title": result['title'].strip(), "filetype": file_name[-3:], "course": {}, "content": result['content']}
-        if result['course_type'] is not None:
-            data['course']['type'] = result['course_type']
-        data['course']['name'] = result['course_name'].strip()
+        if result['comfirm']:
+            data = {"title": result['title'].strip(), "filetype": file_name[-3:], "course": {}, "content": result['content']}
+            if result['course_type'] is not None:
+                data['course']['type'] = result['course_type']
+            data['course']['name'] = result['course_name'].strip()
+        else:
+            cancel()
         
 
     metadata["data"] = data
