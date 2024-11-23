@@ -154,7 +154,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
             long_instruction="例如 <md5>.pdf 或 https://byrdocs.org/files/<md5>.pdf",
             validate=format_filename,
             mandatory_message="必填",
-            invalid_message="文件名错误，应为十六进制 md5 值加文件后缀 (.pdf/.zip)",
+            invalid_message="文件名错误，应为十六进制 md5 值加文件后缀 (.pdf/.zip)"
         ).execute()
     file_name = format_filename(file_name)
     metadata["id"] = file_name[:-4]
@@ -170,7 +170,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
         if not continued:
             cancel()
 
-    type: str = inquirer.rawlist(
+    type: str = inquirer.select(
         mandatory_message="必填",
         message="文件类型:",
         choices=[
@@ -188,18 +188,17 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "message": "标题:",
                 "validate": not_empty,
                 "mandatory_message": "必填",
-                "invalid_message": "请填写一个书籍标题",
+                "invalid_message": "必填",
             },
             {
                 "type": "input",
                 "multiline": True,
                 "message": "作者:",
-                "instruction": " ",
                 "long_instruction": "一行一个\nEnter 换行；ESC + Enter 提交",
                 "validate": not_empty,
                 "mandatory_message": "必填",
                 "transformer": to_clear_list,
-                "invalid_message": "请填写至少一个作者",
+                "invalid_message": "填写至少一个作者",
             },
             {
                 "type": "input",
@@ -216,7 +215,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "mandatory": False,
                 "long_instruction": "阿拉伯数字，可选",
                 "validate": lambda e: to_vaild_edition(e) is not None,
-                "invalid_message": "请填写合法的版次。",
+                "invalid_message": "请填写合法的版次",
             },
             {
                 "type": "input",
@@ -230,7 +229,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "mandatory": False,
                 "validate": is_vaild_year,
                 "long_instruction": "可选",
-                "invalid_message": "请填写合法的年份。",
+                "invalid_message": "请填写合法的年份",
             },
             {
                 "type": "input",
@@ -241,7 +240,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "validate": to_isbn13,
                 "mandatory_message": "必填",
                 "transformer": to_clear_list,
-                "invalid_message": "请填写至少一个合法的 ISBN-10 或 ISBN-13。",
+                "invalid_message": "请填写至少一个合法的 ISBN-10 或 ISBN-13",
             },
             {"name": "confirm", "type": "confirm", "message": "确认提交?",
                 "default": True, "mandatory": False},
@@ -280,7 +279,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
             },
             {
                 "name": "course_type",
-                "type": "rawlist",
+                "type": "list",
                 "message": "考试学段:",
                 "mandatory": False,
                 "choices": [
@@ -302,14 +301,14 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
         result1 = prompt(questions1)
         time_start = inquirer.text(
             message="考试学年开始年份:",
-            long_instruction="例如 2023-2024 学年，应当填写 2023。如果只能精确到某一年，填写该年份即可。\n",
+            long_instruction="例如 2023-2024 学年，应当填写 2023。如果只能精确到某一年，填写该年份即可",
             validate=lambda y: is_vaild_year(y) and not_empty(y),
             mandatory_message="必填",
             invalid_message="请填写合法的年份，完全不知道年份的试题是不应该收录的",
         ).execute()
         time_end = inquirer.text(
             message="考试学年结束年份:",
-            long_instruction="例如 2023-2024 学年，应当填写 2024。如果只能精确到某一年，填写该年份即可。\n",
+            long_instruction="例如 2023-2024 学年，应当填写 2024。如果只能精确到某一年，填写该年份即可",
             validate=lambda y: valid_year_period(time_start, y),
             mandatory_message="必填",
             invalid_message=f"仅能填写 {time_start} 或 {int(time_start) + 1}",
@@ -317,7 +316,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
         questions2 = [
             {
                 "name": "semester",
-                "type": "rawlist",
+                "type": "list",
                 "message": "考试所在的学期:",
                 "mandatory": False,
                 "choices": [
@@ -328,7 +327,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
             },
             {
                 "name": "stage",
-                "type": "rawlist",
+                "type": "list",
                 "message": "是期中还是期末考试？",
                 "mandatory": False,
                 "choices": [
@@ -339,14 +338,13 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
             },
             {
                 "name": "content",
-                "type": "rawlist",
+                "type": "checkbox",
                 "message": "是原题还是答案, 还是均有？",
                 "long_instruction": "空格以选择，回车以提交\n如果只有答案而没有题面，不能算作「原题」。\n如果答案不能涵盖绝大多数题目，不能算作「答案」。\n如果题目、答案都显著不全，这样的文件不应当被收录。",
                 "choices": [
                     Choice(value="原题", name="原题"),
                     Choice(value="答案", name="答案"),
                 ],
-                "multiselect": True,
                 "mandatory_message": "必填",
             },
             {"name": "confirm", "type": "confirm", "message": "确认提交?",
@@ -406,11 +404,10 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
             },
             {
                 "name": "content",
-                "type": "rawlist",
+                "type": "checkbox",
                 "message": "选择一个或多个资料类型：",
                 "long_instruction": "空格以选择，回车以提交",
                 "choices": ["思维导图", "题库", "答案", "知识点", "课件"],
-                "multiselect": True,
                 "mandatory_message": "必填",
             },
             {"name": "confirm", "type": "confirm", "message": "确认提交?",
@@ -430,14 +427,13 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
     metadata["data"] = data
 
     yaml_content = (
-        "# yaml-language-server: $schema=https://byrdocs.org/schema/book.yaml\n\n"
+        f"# yaml-language-server: $schema=https://byrdocs.org/schema/{type}.yaml\n\n"
     )
     yaml_content += yaml.dump(metadata, indent=2,
                               sort_keys=False, allow_unicode=True)
     with open(f"{metadata['id']}.yml", "w", encoding="utf-8") as f:
         f.write(yaml_content)
+    print()
+    print(yaml_content)
     print(f"\n\033[1;32m✔ 已写入 {metadata['id']}.yml\033[0m")
 
-
-# print(to_isbn13("978-7-04-023069-7"))
-# ask_for_init()
