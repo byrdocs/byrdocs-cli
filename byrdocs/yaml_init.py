@@ -89,6 +89,16 @@ def to_isbn13(isbns) -> list[str] | None:
             return None
     return result
 
+def valid_year_period(start: str, end: str) -> bool:
+    if start == "" or end == "":
+        return False
+    try:
+        start = int(start)
+        end = int(end)
+    except ValueError:
+        return False
+    return end - start in [0, 1]
+
 
 def format_filename(file_name: str) -> str | None:
     file_name = file_name.strip()
@@ -218,7 +228,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
             
 
     elif type == "test":
-        questions = [
+        questions1 = [
             {
                 "name": "college",
                 "type": "input",
@@ -247,23 +257,22 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "instruction": "需要包括字母和括号中的内容，比如「高等数学A（上）」",
                 "validate": not_empty,
                 "invalid_message": "请填写课程全称，必填。"
-            },
-            {
-                "name": "time_start",
-                "type": "input",
-                "message": "填写学年开始的年份：",
-                "instruction": "例如 2023-2024 学年，应当填写 2023。如果只能精确到某一年，填写该年份即可。",
-                "validate": lambda y: is_vaild_year(y) and not_empty(y),
-                "invalid_message": "请填写合法的年份。完全不知道年份的试题是不应该收录的。"
-            },
-            {
-                "name": "time_end",
-                "type": "input",
-                "message": "填写学年结束的年份：",
-                "instruction": "例如 2023-2024 学年，应当填写 2024。如果只能精确到某一年，填写该年份即可。",
-                "validate": lambda y: is_vaild_year(y) and not_empty(y),
-                "invalid_message": "请填写合法的年份。完全不知道年份的试题是不应该收录的。"
-            },
+            }
+        ]
+        result1 = prompt(questions1)
+        time_start = inquirer.text(
+            message="填写学年开始的年份：",
+            instruction="例如 2023-2024 学年，应当填写 2023。如果只能精确到某一年，填写该年份即可。",
+            validate = lambda y: is_vaild_year(y) and not_empty(y),
+            invalid_message="请填写合法的年份。完全不知道年份的试题是不应该收录的。",
+        ).execute()
+        time_end = inquirer.text(
+            message="填写学年结束的年份：",
+            instruction="例如 2023-2024 学年，应当填写 2024。如果只能精确到某一年，填写该年份即可。",
+            validate = lambda y: valid_year_period(time_start, y),
+            invalid_message="请填写合法的年份。跨度仅能是 0 或 1 年。",
+        ).execute()
+        questions2 = [
             {
                 "name": "semester",
                 "type": "rawlist",
@@ -297,7 +306,8 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
             },
             {"name": "confirm", "type": "confirm", "message": "是否确认提交?", "default": True}
         ]
-        result: dict = prompt(questions)
+        result2: dict = prompt(questions2)
+        result = {**result1, **result2}
         # print(result)
         # result = [str(s).strip() for s in result.values()]
         # result = {k: str(v).strip() for k, v in result.items()}
@@ -310,8 +320,8 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
             if result['course_type'] is not None:
                 data['course']['type'] = result['course_type']
             data['course']['name'] = result['course_name'].strip()
-            data['time']['start'] = result['time_start'].strip()
-            data['time']['end'] = result['time_end'].strip()
+            data['time']['start'] = time_start.strip()
+            data['time']['end'] = time_end.strip()
             if result['semester'] is not None:
                 data['time']['semester'] = result['semester']
             if result['stage'] is not None:
