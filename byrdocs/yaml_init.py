@@ -5,24 +5,29 @@ from prompt_toolkit.document import Document
 import yaml
 import pinyin
 import isbnlib
+import os
 
 
 # init metadata
 data: dict[str, str | dict] = {}
 
-metadata: dict[str, str | dict] = {"id": "", "url": "", "type": "", "data": data}
+metadata: dict[str, str | dict] = {
+    "id": "", "url": "", "type": "", "data": data}
 
 
 def get_pinyin(text):
     return pinyin.get(text, format="strip", delimiter=" ")
 
+
 colleges = ["信息与通信工程学院", "电子工程学院", "计算机学院（国家示范性软件学院）",
-      "网络空间安全学院", "人工智能学院", "智能工程与自动化学院", "集成电路学院",
-      "经济管理学院", "理学院", "未来学院", "人文学院", "数字媒体与设计艺术学院",
-      "马克思主义学院", "国际学院", "应急管理学院", "网络教育学院（继续教育学院）",
-      "玛丽女王海南学院", "体育部", "卓越工程师学院"]
+            "网络空间安全学院", "人工智能学院", "智能工程与自动化学院", "集成电路学院",
+            "经济管理学院", "理学院", "未来学院", "人文学院", "数字媒体与设计艺术学院",
+            "马克思主义学院", "国际学院", "应急管理学院", "网络教育学院（继续教育学院）",
+            "玛丽女王海南学院", "体育部", "卓越工程师学院"]
 colleges_pinyin = {c: get_pinyin(c) for c in colleges}
 college_completer = {s: None for s in colleges}
+
+
 def college_validate(content):
     content = content.strip()
     if content == "":
@@ -33,13 +38,16 @@ def college_validate(content):
             return False
     return True
 
+
 class CollageCompleter(Completer):
     def get_completions(self, document: Document, complete_event):
         input_pinyin = get_pinyin(document.text)
         input_pinyin = input_pinyin.replace(" ", "")
-        suggestions = [college for college, pinyin_name in colleges_pinyin.items() if pinyin_name.replace(" ", "").startswith(input_pinyin)]
+        suggestions = [college for college, pinyin_name in colleges_pinyin.items(
+        ) if pinyin_name.replace(" ", "").startswith(input_pinyin)]
         for suggestion in suggestions:
             yield Completion(suggestion, start_position=-len(input_pinyin))
+
 
 def not_empty(content):
     return content.strip() != ""
@@ -66,8 +74,9 @@ def to_vaild_edition(edition: str) -> str | None:
         edition = edition.removeprefix("第")
         edition = edition.removesuffix("版")
         edition = edition.strip()
-        汉字 = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十", "二十一", "二十二", "二十三", "二十四", "二十五", "二十六", "二十七", "二十八", "二十九", "三十", "三十一", "三十二", "三十三", "三十四", "三十五", "三十六", "三十七", "三十八", "三十九", "四十", "四十一", "四十二", "四十三", "四十四", "四十五", "四十六", "四十七", "四十八", "四十九", "五十", "五十一", "五十二", "五十三", "五十四", "五十五", "五十六", "五十七", "五十八", "五十九", "六十", "六十一", "六十二", "六十三", "六十四", "六十五", "六十六", "六十七", "六十八", "六十九", "七十", "七十一", "七十二", "七十三", "七十四", "七十五", "七十六", "七十七", "七十八", "七十九", "八十", "八十一", "八十二", "八十三", "八十四", "八十五", "八十六", "八十七", "八十八", "八十九", "九十", "九十一", "九十二", "九十三", "九十四", "九十五", "九十六", "九十七", "九十八", "九十九", "一百"]
-        try: 
+        汉字 = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十", "二十一", "二十二", "二十三", "二十四", "二十五", "二十六", "二十七", "二十八", "二十九", "三十", "三十一", "三十二", "三十三", "三十四", "三十五", "三十六", "三十七", "三十八", "三十九", "四十", "四十一", "四十二", "四十三", "四十四", "四十五", "四十六", "四十七", "四十八", "四十九", "五十", "五十一", "五十二",
+              "五十三", "五十四", "五十五", "五十六", "五十七", "五十八", "五十九", "六十", "六十一", "六十二", "六十三", "六十四", "六十五", "六十六", "六十七", "六十八", "六十九", "七十", "七十一", "七十二", "七十三", "七十四", "七十五", "七十六", "七十七", "七十八", "七十九", "八十", "八十一", "八十二", "八十三", "八十四", "八十五", "八十六", "八十七", "八十八", "八十九", "九十", "九十一", "九十二", "九十三", "九十四", "九十五", "九十六", "九十七", "九十八", "九十九", "一百"]
+        try:
             edition = int(edition)
         except ValueError:
             if edition in 汉字:
@@ -88,6 +97,7 @@ def to_isbn13(isbns) -> list[str] | None:
         else:
             return None
     return result
+
 
 def valid_year_period(start: str, end: str) -> bool:
     if start == "" or end == "":
@@ -132,7 +142,7 @@ def to_clear_list(content: str) -> list[str]:
 
 
 def cancel() -> None:
-    print("已取消提交。")
+    print("已取消")
     exit(0)
 
 
@@ -140,16 +150,29 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
     global metadata
     if file_name is None:
         file_name = inquirer.text(
-            message="Please enter the file name you got: ",
+            message="文件名或链接:",
+            long_instruction="例如 <md5>.pdf 或 https://byrdocs.org/files/<md5>.pdf",
             validate=format_filename,
-            invalid_message="文件名错误，应为32位的十六进制md5文件名加上文件后缀名 (.pdf/.zip)",
+            mandatory_message="必填",
+            invalid_message="文件名错误，应为十六进制 md5 值加文件后缀 (.pdf/.zip)",
         ).execute()
     file_name = format_filename(file_name)
     metadata["id"] = file_name[:-4]
     metadata["url"] = f"https://byrdocs.org/files/{file_name}"
+    if os.path.exists(metadata["id"]+".yml"):
+        continued = inquirer.confirm(
+            message=f"当前路径下存在该文件的元信息文件，是否继续并覆盖此文件?",
+            long_instruction=f"{os.path.realpath(metadata["id"]+".yml")}",
+            default=False,
+            confirm_letter="y",
+            reject_letter="n",
+        ).execute()
+        if not continued:
+            cancel()
 
     type: str = inquirer.rawlist(
-        message="Select a file type:",
+        mandatory_message="必填",
+        message="文件类型:",
         choices=[
             Choice(value="book", name="书籍"),
             Choice(value="test", name="试题"),
@@ -162,55 +185,66 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
         questions = [
             {
                 "type": "input",
-                "message": "输入书籍标题:",
+                "message": "标题:",
                 "validate": not_empty,
+                "mandatory_message": "必填",
                 "invalid_message": "请填写一个书籍标题",
             },
             {
                 "type": "input",
                 "multiline": True,
-                "message": "输入书籍作者，可输入多个:",
-                "instruction": "可输入多个作者，一行一个，Enter换行，ESC+Enter提交。",
+                "message": "作者:",
+                "instruction": " ",
+                "long_instruction": "一行一个\nEnter 换行；ESC + Enter 提交",
                 "validate": not_empty,
+                "mandatory_message": "必填",
                 "transformer": to_clear_list,
                 "invalid_message": "请填写至少一个作者",
             },
             {
                 "type": "input",
                 "multiline": True,
-                "message": "输入译者，可输入多个:",
-                "instruction": "可输入多个译者，一行一个，如没有/未知译者，可省略。Enter换行，ESC+Enter提交。",
+                "instruction": " ",
+                "long_instruction": "一行一个，可选\nEnter 换行；ESC + Enter 提交",
+                "message": "译者:",
+                "mandatory": False,
                 "transformer": to_clear_list,
             },
             {
                 "type": "input",
-                "message": "输入书籍的版本: ",
-                "instruction": "一个数字，如未知版次，可留空。\n",
+                "message": "版次:",
+                "mandatory": False,
+                "long_instruction": "阿拉伯数字，可选",
                 "validate": lambda e: to_vaild_edition(e) is not None,
                 "invalid_message": "请填写合法的版次。",
             },
             {
                 "type": "input",
-                "message": "输入出版社: ",
-                "instruction": "如未知出版社，可留空。\n",
+                "mandatory": False,
+                "message": "出版社:",
+                "long_instruction": "可选",
             },
             {
                 "type": "input",
-                "message": "输入出版年份: ",
+                "message": "出版年份:",
+                "mandatory": False,
                 "validate": is_vaild_year,
-                "instruction": "",
+                "long_instruction": "可选",
                 "invalid_message": "请填写合法的年份。",
             },
             {
                 "type": "input",
                 "multiline": True,
-                "message": "输入书籍的 ISBN: ",
-                "instruction": "可输入多个 ISBN，一行一个，Enter换行，ESC+Enter提交。",
+                "message": "ISBN:",
+                "long_instruction": "一行一个\nEnter 换行；ESC + Enter 提交",
+                "instruction": " ",
                 "validate": to_isbn13,
+                "mandatory_message": "必填",
                 "transformer": to_clear_list,
-                "invalid_message": "请填写至少一个合法的 ISBN10 或 ISBN13 编号。",
+                "invalid_message": "请填写至少一个合法的 ISBN-10 或 ISBN-13。",
             },
-            {"name": "confirm", "type": "confirm", "message": "是否确认提交?", "default": True},
+            {"name": "confirm", "type": "confirm", "message": "确认提交?",
+                "default": True, "mandatory": False},
         ]
         result = prompt(questions)
         if result["confirm"]:
@@ -228,58 +262,64 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
             data["filetype"] = file_name[-3:]
         else:
             cancel()
-            
 
     elif type == "test":
         questions1 = [
             {
                 "name": "college",
                 "type": "input",
-                "message": "输入考试的学院：",
-                "instruction": "可输入多个学院，一行一个。只有当你确认「此学院在当时实际考过这份考卷」时，才可以填写这个学院。如无法确认，应当不填。Tab补全，Enter换行，ESC+Enter提交。",
+                "instruction": " ",
+                "message": "考试学院:",
+                "long_instruction": "确认学院实际考过此考卷才填写，无法确认可留空\n一行一个，可选\nTab 补全；Enter 换行；ESC + Enter 提交",
                 "completer": CollageCompleter(),
                 "multiline": True,
+                "mandatory": False,
                 "validate": college_validate,
-                "invalid_message": "请填写合法的学院全名，可用方向键移动光标，按Tab补全为全名。",
+                "invalid_message": "请填写合法的学院全名",
                 "transformer": lambda content: to_clear_list(content)
             },
             {
                 "name": "course_type",
                 "type": "rawlist",
-                "message": "选择考试的学段：",
+                "message": "考试学段:",
+                "mandatory": False,
                 "choices": [
                     "本科",
                     "研究生",
                     Choice(value=None, name="未知")
                 ]
-            }, 
+            },
             {
                 "name": "course_name",
                 "type": "input",
-                "message": "输入考试对应课程的全称：",  
-                "instruction": "需要包括字母和括号中的内容，比如「高等数学A（上）」\n",
+                "message": "考试课程全称:",
+                "long_instruction": "需要包括字母和括号中的内容，比如「高等数学A（上）」",
                 "validate": not_empty,
-                "invalid_message": "请填写课程全称，必填。"
+                "mandatory_message": "必填",
+                "invalid_message": "必填"
             }
         ]
         result1 = prompt(questions1)
         time_start = inquirer.text(
-            message="填写学年开始的年份：",
-            instruction="例如 2023-2024 学年，应当填写 2023。如果只能精确到某一年，填写该年份即可。\n",
-            validate = lambda y: is_vaild_year(y) and not_empty(y),
-            invalid_message="请填写合法的年份。完全不知道年份的试题是不应该收录的。",
+            message="考试学年开始年份:",
+            long_instruction="例如 2023-2024 学年，应当填写 2023。如果只能精确到某一年，填写该年份即可。\n",
+            validate=lambda y: is_vaild_year(y) and not_empty(y),
+            mandatory_message="必填",
+            invalid_message="请填写合法的年份，完全不知道年份的试题是不应该收录的",
         ).execute()
         time_end = inquirer.text(
-            message="填写学年结束的年份：",
-            instruction="例如 2023-2024 学年，应当填写 2024。如果只能精确到某一年，填写该年份即可。\n",
-            validate = lambda y: valid_year_period(time_start, y),
-            invalid_message="请填写合法的年份。跨度仅能是 0 或 1 年。",
+            message="考试学年结束年份:",
+            long_instruction="例如 2023-2024 学年，应当填写 2024。如果只能精确到某一年，填写该年份即可。\n",
+            validate=lambda y: valid_year_period(time_start, y),
+            mandatory_message="必填",
+            invalid_message=f"仅能填写 {time_start} 或 {int(time_start) + 1}",
         ).execute()
         questions2 = [
             {
                 "name": "semester",
                 "type": "rawlist",
-                "message": "选择考试所在的学期：",
+                "message": "考试所在的学期:",
+                "mandatory": False,
                 "choices": [
                     Choice(value="First", name="第一学期"),
                     Choice(value="Second", name="第二学期"),
@@ -290,6 +330,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "name": "stage",
                 "type": "rawlist",
                 "message": "是期中还是期末考试？",
+                "mandatory": False,
                 "choices": [
                     Choice(value="期中", name="期中"),
                     Choice(value="期末", name="期末"),
@@ -300,14 +341,16 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "name": "content",
                 "type": "rawlist",
                 "message": "是原题还是答案, 还是均有？",
-                "instruction": "选定选项后, 按下空格以多选。如果只有答案而没有题面，不能算作「原题」。如果答案不能涵盖绝大多数题目，不能算作「答案」。如果题目、答案都显著不全，这样的文件不应当被收录。\n",
+                "long_instruction": "空格以选择，回车以提交\n如果只有答案而没有题面，不能算作「原题」。\n如果答案不能涵盖绝大多数题目，不能算作「答案」。\n如果题目、答案都显著不全，这样的文件不应当被收录。",
                 "choices": [
                     Choice(value="原题", name="原题"),
                     Choice(value="答案", name="答案"),
                 ],
-                "multiselect": True
+                "multiselect": True,
+                "mandatory_message": "必填",
             },
-            {"name": "confirm", "type": "confirm", "message": "是否确认提交?", "default": True}
+            {"name": "confirm", "type": "confirm", "message": "确认提交?",
+                "default": True, "mandatory": False},
         ]
         result2: dict = prompt(questions2)
         result = {**result1, **result2}
@@ -339,56 +382,61 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
             {
                 "name": "title",
                 "type": "input",
-                "message": "输入资料标题:",
-                "instruction": "自行总结一个合适的标题\n",
+                "message": "标题:",
+                "long_instruction": "自行总结一个合适的标题",
                 "validate": not_empty,
-                "invalid_message": "必填。",
+                "invalid_message": "必填",
+                "mandatory_message": "必填",
             },
             {
                 "name": "course_type",
                 "type": "rawlist",
-                "message": "选择资料适用的学段：",
+                "message": "资料适用的学段:",
                 "choices": ["本科", "研究生", Choice(value=None, name="未知")],
+                "mandatory": False,
             },
             {
                 "name": "course_name",
                 "type": "input",
-                "message": "输入资料对应课程的全称：",
-                "instruction": "需要包括字母和括号中的内容，比如「高等数学A（上）」\n",
+                "message": "资料对应课程的全称:",
+                "long_instruction": "需要包括字母和括号中的内容，比如「高等数学A（上）」",
                 "validate": not_empty,
-                "invalid_message": "请填写课程全称，必填。",
+                "invalid_message": "请填写课程全称",
+                "mandatory_message": "必填",
             },
             {
                 "name": "content",
                 "type": "rawlist",
                 "message": "选择一个或多个资料类型：",
-                "instruction": "选定选项后, 按下空格以多选。\n",
+                "long_instruction": "空格以选择，回车以提交",
                 "choices": ["思维导图", "题库", "答案", "知识点", "课件"],
                 "multiselect": True,
+                "mandatory_message": "必填",
             },
-            {"name": "comfirm" ,"type": "confirm", "message": "是否确认提交?", "default": True},
+            {"name": "confirm", "type": "confirm", "message": "确认提交?",
+                "default": True, "mandatory": False},
         ]
         result = prompt(questions)
         # result = {k: str(v).strip() for k, v in result.items()}
-        if result['comfirm']:
-            data = {"title": result['title'].strip(), "filetype": file_name[-3:], "course": {}, "content": result['content']}
+        if result['confirm']:
+            data = {"title": result['title'].strip(
+            ), "filetype": file_name[-3:], "course": {}, "content": result['content']}
             if result['course_type'] is not None:
                 data['course']['type'] = result['course_type']
             data['course']['name'] = result['course_name'].strip()
         else:
             cancel()
-        
 
     metadata["data"] = data
 
     yaml_content = (
         "# yaml-language-server: $schema=https://byrdocs.org/schema/book.yaml\n\n"
     )
-    yaml_content += yaml.dump(metadata, indent=2, sort_keys=False, allow_unicode=True)
-    with open(f"{metadata['id']}.yaml", "w", encoding="utf-8") as f:
+    yaml_content += yaml.dump(metadata, indent=2,
+                              sort_keys=False, allow_unicode=True)
+    with open(f"{metadata['id']}.yml", "w", encoding="utf-8") as f:
         f.write(yaml_content)
-    print(f"\033[1;94m\n以下的文件元信息已经存储到 {metadata['id']}.yaml 中。\n\033[0m")
-    print(yaml_content)
+    print(f"\n\033[1;32m✔ 已写入 {metadata['id']}.yml\033[0m")
 
 
 # print(to_isbn13("978-7-04-023069-7"))
