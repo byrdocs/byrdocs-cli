@@ -21,24 +21,24 @@ quote = lambda s: f"\033[37m{s}\033[0m"
 command_parser = argparse.ArgumentParser(
     prog="byrdocs",
     description=
-        "命令:\n" +
-        "  upload <file>    上传文件 [默认]\n" +
-        "  login            登录 BYR Docs\n" +
-        "  logout           退出登录\n"+
-        "  init             交互式地生成文件元信息 yaml 文件\n"+
-        "  validate         (施工中) 判断 yaml 元信息文件的合法性\n",
+        "命令：\n" +
+        "  upload <文件路径>    上传文件 [默认命令]\n" +
+        "  login               登录到 BYR Docs\n" +
+        "  logout              退出登录\n"+
+        "  init                交互式生成文件元信息文件\n"+
+        "  validate            (待实现) 验证元信息文件的合法性\n",
     formatter_class=argparse.RawDescriptionHelpFormatter,
     epilog=
-        "示例:\n" +
-        f"{' $ byrdocs login'}\n" +
-        f"{' $ byrdocs /home/exam_paper.pdf'}\n" +
-        f"{' $ byrdocs logout'}\n"
-        f"{' $ byrdocs init'}\n"
-        )
+        "示例：\n" +
+        "  $ byrdocs login\n" +
+        "  $ byrdocs /home/exam_paper.pdf\n" +
+        "  $ byrdocs logout\n" +
+        "  $ byrdocs init\n"
+    )
 # command_parser.add_argument('--help', '-h', action='help', help='Show this help message and exit')
-command_parser.add_argument("command", nargs='?', help="执行的操作")
-command_parser.add_argument("file", nargs='?', help="上传的文件路径").completer = argcomplete.completers.FilesCompleter()
-command_parser.add_argument("--token", help="手动登录时传入的 token")
+command_parser.add_argument("command", nargs='?', help="要执行的命令")
+command_parser.add_argument("file", nargs='?', help="要上传的文件路径").completer = argcomplete.completers.FilesCompleter()
+command_parser.add_argument("--token", help="指定登录时使用的 token")
 
 baseURL = "https://byrdocs.org"
 
@@ -80,20 +80,20 @@ def get_file_type(file) -> str:
         else:
             return "unsupported"
 
-@retry_handler("请求登录时出现错误。", interval=1)    # decorator
+@retry_handler("登录请求错误", interval=1)    # decorator
 def request_login_data() -> dict[str, str]:
     return requests.post(f"{baseURL}/api/auth/login").json()
 
-@retry_handler("获取登录状态时出现错误")
+@retry_handler("登录错误")
 def request_token(data: dict[str, str]) -> str:
     try:
         r = requests.get(data["tokenURL"], timeout=120)
         r.raise_for_status()
         r = r.json()
     except requests.exceptions.Timeout:
-        raise Exception("获取登录凭证时超时。")  # raise to retry_handler
+        raise Exception("登录超时")  # raise to retry_handler
     except requests.exceptions.RequestException as e:
-        raise Exception(f"请求登录凭证时出现网络错误: {e}")
+        raise Exception(f"网络错误: {e}")
     if not r.get("success", False):
         raise Exception(f"未知错误: {r}")
     return r["token"]
@@ -123,7 +123,7 @@ def main():
         exit(0)
         
     if args.command == 'validate':
-        print(warn("该功能正在施工中..."))
+        print(warn("该功能尚未实现"))
         exit(0)
 
 
@@ -137,14 +137,14 @@ def main():
         if token:
             with token_path.open("w") as f:
                 f.write(token)
-            print(info(f"登录凭证已保存到 {token_path.absolute()} 。"))
+            print(info(f"登录凭证已保存到 {token_path.absolute()}"))
             return
 
         if token_path.exists():
-            print(warn("已登录，输入 byrdocs logout 命令以退出登录。"))
+            print(warn("已登录，byrdocs logout 以退出登录"))
             exit(1)
 
-        print(info("尚未登录，正在请求登录..."))
+        print(info("未检测到登录信息，正在请求登录..."))
         # token = request_token()
         login_data = request_login_data()
         print(info("请在浏览器中访问以下链接进行登录:"))
@@ -153,7 +153,7 @@ def main():
         
         with token_path.open("w") as f:
             f.write(token)
-        print(info(f"登录成功，凭证已保存到 {token_path.absolute()} 。"))
+        print(info(f"登录成功，凭证已保存到 {token_path.absolute()}"))
 
     if args.command == 'login':
         login(args.token)
@@ -164,7 +164,7 @@ def main():
 
     if args.command == 'logout':
         os.remove(token_path)
-        print(info(f"已移除 {token_path.absolute()} 处的登录凭证。"))
+        print(info(f"登出成功"))
         exit(0)
 
     with token_path.open("r") as f:
@@ -172,8 +172,8 @@ def main():
 
     if args.command == 'upload' or args.file:
         if not args.file:
-            print(error("错误：请指定一个需要上传的文件。"))
-            print(warn("输入 byrdocs -h 命令以获取帮助。"))
+            print(error("错误：未指定要上传的文件"))
+            print(warn("使用 byrdocs -h 获取帮助"))
             exit(1)
 
         file = args.file
@@ -185,11 +185,11 @@ def main():
             print(error(f"未找到文件: {file}"))
             exit(1)
         except Exception as e:
-            print(error(f"读取文件时出现错误: {e}"))
+            print(error(f"读取文件出错: {e}"))
             exit(1)
 
         if (file_type := get_file_type(file)) == "unsupported":
-            print(error(f"错误：暂不支持文件格式 `{file_type}`，当前仅支持上传 PDF 或 ZIP 文件。"))
+            print(error(f"错误：不支持的文件格式 `{file_type}`，仅支持上传 PDF 或 ZIP 文件。"))
             exit(1)
 
         payload = json.dumps(
@@ -211,7 +211,7 @@ def main():
 
         if not upload_response_data["success"]:
             try:
-                print(error(f"文件存储服务器出现错误: {response.json()['error']}"))    # TODO: 优化失败处理
+                print(error(f"服务器错误: {response.json()['error']}"))    # TODO: 优化失败处理
             except:
                 print(error(f"未知错误: {response.text}"))
             exit(1)
@@ -266,7 +266,7 @@ def main():
             print(f"\t文件地址: {baseURL}/files/{new_filename}")
             
             try:
-                if ask_for_confirmation("是否直接对该文件进行元信息录入？"):
+                if ask_for_confirmation("是否立即为该文件录入元信息？"):
                     _ask_for_init(new_filename)
                 else:
                     cancel()
@@ -278,5 +278,5 @@ def main():
             print(error(f"证书错误: {e}"))
         except Exception as e:
             progress_bar.close()
-            print(error(f"上传文件时出现错误: {e}"))
-            print(warn("请检查你的文件标签、登录状态及网络连接，再尝试重新上传，这或许能解决问题。"))
+            print(error(f"上传文件出错: {e}"))
+            print(warn("请稍后重试。"))
