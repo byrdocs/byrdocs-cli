@@ -6,6 +6,7 @@ import yaml
 import pinyin
 import isbnlib
 import os
+import time
 from byrdocs.history_manager import UploadHistory
 
 
@@ -53,6 +54,18 @@ class CollageCompleter(Completer):
         for suggestion in suggestions:
             yield Completion(suggestion, start_position=-len(input_pinyin))
 
+def get_delta_time(upload_time: float) -> str:
+    delta = time.time() - upload_time
+    if delta < 60:
+        return f"{int(delta)} 秒前"
+    delta = int(delta / 60)
+    if delta < 60:
+        return f"{delta} 分钟前"
+    delta = int(delta / 60)
+    if delta < 24:
+        return f"{delta} 小时前"
+    delta = int(delta / 24)
+    return f"{delta}天前"
 
 def get_recent_file_choices() -> list[Choice] | None:
     history = UploadHistory()
@@ -60,7 +73,9 @@ def get_recent_file_choices() -> list[Choice] | None:
     history.sort(key=lambda x: x[2], reverse=True)
     choices = []
     for line in history:
-        choices.append(Choice(value=line[1], name=line[0]))
+        choices.append(
+            Choice(value=line[1], name=f"{line[0]} ({get_delta_time(float(line[2]))})")
+        )
     if choices == []:
         return None
     return choices
