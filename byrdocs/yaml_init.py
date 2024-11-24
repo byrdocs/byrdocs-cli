@@ -65,7 +65,7 @@ def get_delta_time(upload_time: float) -> str:
     if delta < 24:
         return f"{delta} 小时前"
     delta = int(delta / 24)
-    return f"{delta}天前"
+    return f"{delta} 天前"
 
 def get_recent_file_choices() -> list[Choice] | None:
     history = UploadHistory()
@@ -198,7 +198,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
         if file_name is None:
             file_name = inquirer.fuzzy(
                 message="从最近上传记录中选择文件:",
-                long_instruction="键盘上下键移动，回车选定。ESC 取消选择，手动输入其他文件名。",
+                long_instruction="输入文件名或上下键移动，回车选定。按 ESC 跳过。",
                 choices=recent_file_choices,
                 validate=format_filename,
                 transformer=lambda name: f"{name}: {get_recent_file_md5(name)}",

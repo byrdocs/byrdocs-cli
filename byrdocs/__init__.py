@@ -21,15 +21,15 @@ quote = lambda s: f"\033[37m{s}\033[0m"
 command_parser = argparse.ArgumentParser(
     prog="byrdocs",
     description=
-        "可用的命令:\n" +
-        "  upload <file>    上传文件，默认命令即为上传\n" +
-        "  login            请求登录到 BYR Docs 并在本地保存登录凭证\n" +
-        "  logout           删除本地保存的登录凭证，退出 BYR Docs 的登录\n"+
+        "命令:\n" +
+        "  upload <file>    上传文件 [默认]\n" +
+        "  login            登录 BYR Docs\n" +
+        "  logout           退出登录\n"+
         "  init             交互式地生成文件元信息 yaml 文件\n"+
         "  validate         (施工中) 判断 yaml 元信息文件的合法性\n",
     formatter_class=argparse.RawDescriptionHelpFormatter,
     epilog=
-        "示例命令:\n" +
+        "示例:\n" +
         f"{' $ byrdocs login'}\n" +
         f"{' $ byrdocs /home/exam_paper.pdf'}\n" +
         f"{' $ byrdocs logout'}\n"
@@ -38,7 +38,7 @@ command_parser = argparse.ArgumentParser(
 # command_parser.add_argument('--help', '-h', action='help', help='Show this help message and exit')
 command_parser.add_argument("command", nargs='?', help="执行的操作")
 command_parser.add_argument("file", nargs='?', help="上传的文件路径").completer = argcomplete.completers.FilesCompleter()
-command_parser.add_argument("--token", help="手动登录时传入的 token ")
+command_parser.add_argument("--token", help="手动登录时传入的 token")
 
 baseURL = "https://byrdocs.org"
 

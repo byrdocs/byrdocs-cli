@@ -13,7 +13,10 @@ class UploadHistory:
     
     def _read(self) -> None:
         with history_path.open("r") as f:
-            self.history = [line.split(":") for line in f.read().splitlines()]
+            try:
+                self.history = [line.split(":") for line in f.read().splitlines()]
+            except:
+                raise ValueError("无法读取历史记录文件，可能已经损坏")
     
     def _write(self):
         with history_path.open("w") as f:
