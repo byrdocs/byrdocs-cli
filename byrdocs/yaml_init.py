@@ -54,13 +54,15 @@ class CollageCompleter(Completer):
             yield Completion(suggestion, start_position=-len(input_pinyin))
 
 
-def get_recent_file_choices():
+def get_recent_file_choices() -> list[Choice] | None:
     history = UploadHistory()
     history = history.get()
     history.sort(key=lambda x: x[2], reverse=True)
     choices = []
     for line in history:
         choices.append(Choice(value=line[1], name=line[0]))
+    if choices == []:
+        return None
     return choices
 
 def get_recent_file_md5(file_name: str):
@@ -177,17 +179,18 @@ def cancel(text="已取消。") -> None:
 
 def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，需要带上后缀名
     global metadata
-    if file_name is None:
-        file_name = inquirer.fuzzy(
-            message="从最近上传记录中选择文件:",
-            long_instruction="键盘上下键移动，回车选定。ESC 取消选择，手动输入其他文件名。",
-            choices=get_recent_file_choices(),
-            validate=format_filename,
-            transformer=lambda name: f"{name}: {get_recent_file_md5(name)}",
-            keybindings={"skip": [{"key": "escape"}]},
-            mandatory=False,
-            invalid_message="请选择一个正确的文件。"
-        ).execute()
+    if (recent_file_choices := get_recent_file_choices()) is not None:
+        if file_name is None:
+            file_name = inquirer.fuzzy(
+                message="从最近上传记录中选择文件:",
+                long_instruction="键盘上下键移动，回车选定。ESC 取消选择，手动输入其他文件名。",
+                choices=recent_file_choices,
+                validate=format_filename,
+                transformer=lambda name: f"{name}: {get_recent_file_md5(name)}",
+                keybindings={"skip": [{"key": "escape"}]},
+                mandatory=False,
+                invalid_message="请选择一个正确的文件。"
+            ).execute()
     if file_name is None:
         file_name = inquirer.text(
             message="文件名或链接:",
