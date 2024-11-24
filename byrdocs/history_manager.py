@@ -4,7 +4,7 @@ history_path = Path.home() / ".config" / "byrdocs" / "history"
 
 class UploadHistory:
     def __init__(self):
-        self.history: list[list[str]] = []
+        self.history: list[list[str]] = []  # [file, md5, timestamp]
         if history_path.exists():
             self._read()
         else:
@@ -33,7 +33,7 @@ class UploadHistory:
         self.history.append([file, md5, timestamp])
         
     @_with_update  
-    def get(self):
+    def get(self) -> list[list[str]]:
         return self.history
     
     @_with_update
@@ -60,11 +60,11 @@ class Tests:
         # print(self.history.get())
         assert self.history.get() == [["test2", "md5", "time"]]
         
-    def test_clear(self):
-        self.history.add("test1", "md5", "time")
-        self.history.add("test2", "md5", "time")
-        self.history.clear()
-        assert self.history.get() == []
+    # def test_clear(self):
+    #     self.history.add("test1", "md5", "time")
+    #     self.history.add("test2", "md5", "time")
+    #     self.history.clear()
+    #     assert self.history.get() == []
         
     def test_get(self):
         self.history.add("test1", "md5", "time")

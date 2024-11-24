@@ -7,10 +7,11 @@ import pathlib
 import argparse
 import sys
 import os
-from time import sleep
+from time import sleep, time
 import argcomplete
 from tqdm import tqdm
 from byrdocs.yaml_init import ask_for_init, ask_for_confirmation, cancel    # TODO: 进行模块拆分便于维护，而不是全从这里导入进来
+from byrdocs.history_manager import UploadHistory
 
 info = lambda s: f"\033[1;94m{s}\033[0m"
 error = lambda s: f"\033[1;31m{s}\033[0m"
@@ -260,6 +261,7 @@ def main():
                 Config=upload_config
             )
             progress_bar.close()
+            UploadHistory().add(new_filename, md5, time())
             print(info("文件上传成功！"))
             print(f"\t文件地址: {baseURL}/files/{new_filename}")
             
