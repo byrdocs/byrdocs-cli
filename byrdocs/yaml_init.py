@@ -420,11 +420,15 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
         result = prompt(questions)
         # result = {k: str(v).strip() for k, v in result.items()}
         if ask_for_confirmation:
-            data = {"title": result['title'].strip(
-            ), "filetype": file_name[-3:], "course": {}, "content": result['content']}
+            data = {
+                "title": result["title"].strip(),
+                "filetype": file_name[-3:],
+                "course": [{}],      # 格式要求为数组，可能有多项，但此处暂时只支持用户输入单项
+                "content": result["content"],
+            }
             if result['course_type'] is not None:
-                data['course']['type'] = result['course_type']
-            data['course']['name'] = result['course_name'].strip()
+                data['course'][0]['type'] = result['course_type']
+            data['course'][0]['name'] = result['course_name'].strip()
         else:
             cancel()
 
@@ -440,4 +444,3 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
     # print()
     print(yaml_content)
     print(f"\n\033[1;32m✔ 已写入 {metadata['id']}.yml\033[0m")
-
