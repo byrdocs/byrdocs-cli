@@ -419,7 +419,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
         ]
         result = prompt(questions)
         # result = {k: str(v).strip() for k, v in result.items()}
-        if ask_for_confirmation:
+        if ask_for_confirmation():
             data = {
                 "title": result["title"].strip(),
                 "filetype": file_name[-3:],
