@@ -20,24 +20,24 @@ quote = lambda s: f"\033[37m{s}\033[0m"
 command_parser = argparse.ArgumentParser(
     prog="byrdocs",
     description=
-        "Commands:\n" +
-        "  upload <file>    Upload a file. If no command is specified, it defaults to upload.\n" +
-        "  login            Authenticate with BYR Docs and obtain a token.\n" +
-        "  logout           Remove the locally stored authentication token.\n"+
+        "可用的命令:\n" +
+        "  upload <file>    上传文件，默认命令即为上传\n" +
+        "  login            请求登录到 BYR Docs 并在本地保存登录凭证\n" +
+        "  logout           删除本地保存的登录凭证，退出 BYR Docs 的登录\n"+
         "  init             交互式地生成文件元信息 yaml 文件\n"+
         "  validate         (施工中) 判断 yaml 元信息文件的合法性\n",
     formatter_class=argparse.RawDescriptionHelpFormatter,
     epilog=
-        "Examples:\n" +
+        "示例命令:\n" +
         f"{' $ byrdocs login'}\n" +
         f"{' $ byrdocs /home/exam_paper.pdf'}\n" +
         f"{' $ byrdocs logout'}\n"
         f"{' $ byrdocs init'}\n"
         )
 # command_parser.add_argument('--help', '-h', action='help', help='Show this help message and exit')
-command_parser.add_argument("command", nargs='?', help="Command to execute")
-command_parser.add_argument("file", nargs='?', help="Path to the file to upload").completer = argcomplete.completers.FilesCompleter()
-command_parser.add_argument("--token", help="Token for login command")
+command_parser.add_argument("command", nargs='?', help="执行的操作")
+command_parser.add_argument("file", nargs='?', help="上传的文件路径").completer = argcomplete.completers.FilesCompleter()
+command_parser.add_argument("--token", help="手动登录时传入的 token ")
 
 baseURL = "https://byrdocs.org"
 
@@ -62,7 +62,7 @@ def retry_handler(error_description: str, max_retries: int=10, interval: int=0):
                         # print(f"Retrying... ({i+1}/{max_retries})")
                         sleep(interval)
                     else:
-                        print(error(f"{error_description} Failed after {max_retries} retries: {e}"))
+                        print(error(f"{error_description} 在 {max_retries} 次重试后失败: {e}"))
                         sys.exit(1)
         return wrapper
     return decorator
@@ -79,22 +79,22 @@ def get_file_type(file) -> str:
         else:
             return "unsupported"
 
-@retry_handler("Error while requesting to login.", interval=1)    # decorator
+@retry_handler("请求登录时出现错误。", interval=1)    # decorator
 def request_login_data() -> dict[str, str]:
     return requests.post(f"{baseURL}/api/auth/login").json()
 
-@retry_handler("Error while getting login status.")
+@retry_handler("获取登录状态时出现错误")
 def request_token(data: dict[str, str]) -> str:
     try:
         r = requests.get(data["tokenURL"], timeout=120)
         r.raise_for_status()
         r = r.json()
     except requests.exceptions.Timeout:
-        raise Exception("Request timed out while trying to get the token.")  # raise to retry_handler
+        raise Exception("获取登录凭证时超时。")  # raise to retry_handler
     except requests.exceptions.RequestException as e:
-        raise Exception(f"An error occurred while trying to get the token: {e}")
+        raise Exception(f"请求登录凭证时出现网络错误: {e}")
     if not r.get("success", False):
-        raise Exception(f"Unknown error: {r}")
+        raise Exception(f"未知错误: {r}")
     return r["token"]
 
 @interrupt_handler
@@ -122,7 +122,7 @@ def main():
         exit(0)
         
     if args.command == 'validate':
-        print(warn("Not implemented yet."))
+        print(warn("该功能正在施工中..."))
         exit(0)
 
 
@@ -136,23 +136,23 @@ def main():
         if token:
             with token_path.open("w") as f:
                 f.write(token)
-            print(info(f"Token saved to {token_path.absolute()}"))
+            print(info(f"登录凭证已保存到 {token_path.absolute()} 。"))
             return
 
         if token_path.exists():
-            print(warn("Token already exists, you can use `byrdocs logout` to remove it."))
+            print(warn("已登录，输入 byrdocs logout 命令以退出登录。"))
             exit(1)
 
-        print(info("No token found locally, requesting a new one..."))
+        print(info("尚未登录，正在请求登录..."))
         # token = request_token()
         login_data = request_login_data()
-        print(info("Please visit the following URL to authorize the application:"))
+        print(info("请在浏览器中访问以下链接进行登录:"))
         print("\t" + login_data["loginURL"])
         token = request_token(login_data)
         
         with token_path.open("w") as f:
             f.write(token)
-        print(info(f"Login successful, token saved to {token_path.absolute()}"))
+        print(info(f"登录成功，凭证已保存到 {token_path.absolute()} 。"))
 
     if args.command == 'login':
         login(args.token)
@@ -163,7 +163,7 @@ def main():
 
     if args.command == 'logout':
         os.remove(token_path)
-        print(info(f"Token removed from {token_path.absolute()}."))
+        print(info(f"已移除 {token_path.absolute()} 处的登录凭证。"))
         exit(0)
 
     with token_path.open("r") as f:
@@ -171,8 +171,8 @@ def main():
 
     if args.command == 'upload' or args.file:
         if not args.file:
-            print(error("Error: No file specified for upload."))
-            print(warn("Use `byrdocs -h` for help"))
+            print(error("错误：请指定一个需要上传的文件。"))
+            print(warn("输入 byrdocs -h 命令以获取帮助。"))
             exit(1)
 
         file = args.file
@@ -184,11 +184,11 @@ def main():
             print(error(f"未找到文件: {file}"))
             exit(1)
         except Exception as e:
-            print(error(f"Error while reading file: {e}"))
+            print(error(f"读取文件时出现错误: {e}"))
             exit(1)
 
         if (file_type := get_file_type(file)) == "unsupported":
-            print(error(f"Error: Unsupported file type of {file}, only PDF and ZIP are supported."))
+            print(error(f"错误：暂不支持文件格式 `{file_type}`，当前仅支持上传 PDF 或 ZIP 文件。"))
             exit(1)
 
         payload = json.dumps(
@@ -203,16 +203,16 @@ def main():
                 "POST", f"{baseURL}/api/s3/upload", headers=headers, data=payload
             )
         except Exception as e:
-            print(error(f"Error while trying to upload file: {e}"))
+            print(error(f"上传文件时出现错误: {e}"))
             exit(1)
 
         upload_response_data = response.json()
 
         if not upload_response_data["success"]:
             try:
-                print(error(f"Error from server: {response.json()['error']}"))    # TODO: 优化失败处理
+                print(error(f"文件存储服务器出现错误: {response.json()['error']}"))    # TODO: 优化失败处理
             except:
-                print(error(f"Unknown error: {response.text}"))
+                print(error(f"未知错误: {response.text}"))
             exit(1)
 
         # print(f"{new_filename} status: `Pending`")
@@ -260,8 +260,8 @@ def main():
                 Config=upload_config
             )
             progress_bar.close()
-            print(info("File uploaded successfully"))
-            print(f"\tFile URL: {baseURL}/files/{new_filename}")
+            print(info("文件上传成功！"))
+            print(f"\t文件地址: {baseURL}/files/{new_filename}")
             
             try:
                 if ask_for_confirmation("是否直接对该文件进行元信息录入？"):
@@ -273,8 +273,8 @@ def main():
             # print(f"{new_filename} status: `Uploaded`")
         except (NoCredentialsError, PartialCredentialsError) as e:
             progress_bar.close()
-            print(error(f"Credential error: {e}"))
+            print(error(f"证书错误: {e}"))
         except Exception as e:
             progress_bar.close()
-            print(error(f"Error uploading file: {e}"))
-            print(warn("Check your file tag, login status and Internet connection, then try again."))
+            print(error(f"上传文件时出现错误: {e}"))
+            print(warn("请检查你的文件标签、登录状态及网络连接，再尝试重新上传，这或许能解决问题。"))
