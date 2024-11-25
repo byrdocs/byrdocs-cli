@@ -51,7 +51,7 @@ def interrupt_handler(func):
             sys.exit(0)
     return wrapper
 
-def retry_handler(error_description: str, max_retries: int=10, interval: int=0):
+def retry_handler(error_description: str, max_retries: int=10, interval: int=0.1):
     def decorator(func):
         def wrapper(*args, **kwargs):
             for i in range(max_retries):
@@ -63,7 +63,7 @@ def retry_handler(error_description: str, max_retries: int=10, interval: int=0):
                         # print(f"Retrying... ({i+1}/{max_retries})")
                         sleep(interval)
                     else:
-                        print(error(f"{error_description} 在 {max_retries} 次重试后失败: {e}"))
+                        print(error(f"{error_description}。 在 {max_retries} 次重试后失败: {e}"))
                         sys.exit(1)
         return wrapper
     return decorator
