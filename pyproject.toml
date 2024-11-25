@@ -23,7 +23,7 @@ dependencies = [
     "argcomplete==3.5.1",
     "tqdm==4.67.0",
     "InquirerPy==0.3.4",
-    "pyyaml==5.4",
+    "pyyaml==6.0.2",
     "isbnlib==3.10.14",
     "pinyin==0.4.0"
 ]
