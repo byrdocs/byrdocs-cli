@@ -75,24 +75,24 @@ def get_delta_time(upload_time: float) -> str:
     return f"{delta} 天前"
 
 
-def get_recent_file_choices() -> list[Choice] | None:
+def get_recent_file_choices() -> tuple[list[Choice], list[str] | None]:
     history = UploadHistory()
     history = history.get()
     history.sort(key=lambda x: x[2], reverse=True)
     choices = []
-    for line in history:
-        choices.append(
-            Choice(value=line[1], name=f"{line[0]} ({get_delta_time(float(line[2]))})")
-        )
+    time_strings = [get_delta_time(float(line[2])) for line in history]
+    choices = [Choice(value=line[1], name=f"{line[0]} ({time_strings[i]})")
+               for i, line in enumerate(history)]
     if choices == []:
         return None
-    return choices
+    return choices, time_strings
 
 
-def get_recent_file_md5(file_name: str):
+def get_recent_file_md5(file_name: str, time_strings: list[str]) -> str:
     history = UploadHistory()
     history = history.get()
-    for line in history:
+    for index, line in enumerate(history):
+        file_name = file_name.removesuffix(f"({time_strings[index]})").strip()
         if line[0] == file_name:
             return line[1]
     return "Unknown"
@@ -204,14 +204,15 @@ def cancel(text="操作已取消。") -> None:
 
 def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，需要带上后缀名
     global metadata
-    if (recent_file_choices := get_recent_file_choices()) is not None:
+    recent_file_choices, time_strings = get_recent_file_choices()
+    if (recent_file_choices := recent_file_choices) is not None:
         if file_name is None:
             file_name = inquirer.fuzzy(
                 message="选择最近上传的文件:",
                 long_instruction="输入文件名或使用上下键选择，按回车确定，按 ESC 跳过。",
                 choices=recent_file_choices,
                 validate=format_filename,
-                transformer=lambda name: f"{name}: {get_recent_file_md5(name)}",
+                transformer=lambda name: f"{name}: {get_recent_file_md5(name, time_strings)}",
                 keybindings={"skip": [{"key": "escape"}]},
                 mandatory=False,
                 invalid_message="请选择一个有效的文件。"
