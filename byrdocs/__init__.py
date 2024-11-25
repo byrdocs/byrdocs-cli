@@ -199,7 +199,7 @@ def main():
             exit(1)
 
         if (file_type := get_file_type(file)) == "unsupported":
-            print(error(f"错误：不支持的文件格式 `{file_type}`，仅支持上传 PDF 或 ZIP 文件。"))
+            print(error(f"错误：不支持的文件格式 `{str(file).split('.')[-1]}`，仅支持上传 PDF 或 ZIP 文件。"))
             exit(1)
 
         payload = json.dumps(
