@@ -204,8 +204,8 @@ def cancel(text="操作已取消。") -> None:
 
 def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，需要带上后缀名
     global metadata
-    recent_file_choices, time_strings = get_recent_file_choices()
-    if (recent_file_choices := recent_file_choices) is not None:
+    if (recent_file_choices_resp := get_recent_file_choices()) is not None:
+        recent_file_choices, time_strings = get_recent_file_choices()
         if file_name is None:
             file_name = inquirer.fuzzy(
                 message="选择最近上传的文件:",
