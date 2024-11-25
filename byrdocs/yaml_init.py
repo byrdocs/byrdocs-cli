@@ -81,7 +81,7 @@ def get_recent_file_choices() -> tuple[list[Choice], list[str] | None]:
     history.sort(key=lambda x: x[2], reverse=True)
     choices = []
     time_strings = [get_delta_time(float(line[2])) for line in history]
-    choices = [Choice(value=line[1], name=f"{line[0]} ({time_strings[i]})")
+    choices = [Choice(value=line[1], name=f"{line[0]} ({time_strings[i]}){' ':>2}{line[1][:6]}...")
                for i, line in enumerate(history)]
     if choices == []:
         return None
@@ -212,7 +212,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 long_instruction="输入文件名或使用上下键选择，按回车确定，按 ESC 跳过。",
                 choices=recent_file_choices,
                 validate=format_filename,
-                transformer=lambda name: f"{name}: {get_recent_file_md5(name, time_strings)}",
+                # transformer=lambda name: f"{name}: {get_recent_file_md5(name, time_strings)}",
                 keybindings={"skip": [{"key": "escape"}]},
                 mandatory=False,
                 invalid_message="请选择一个有效的文件。"
