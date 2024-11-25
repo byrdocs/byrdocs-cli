@@ -48,12 +48,17 @@ def ask_for_confirmation(prompt: str = "确认提交？") -> bool:
 
 class CollageCompleter(Completer):
     def get_completions(self, document: Document, complete_event):
-        input_pinyin = get_pinyin(document.text)
-        input_pinyin = input_pinyin.replace(" ", "")
-        suggestions = [college for college, pinyin_name in colleges_pinyin.items(
-        ) if pinyin_name.replace(" ", "").startswith(input_pinyin)]
-        for suggestion in suggestions:
-            yield Completion(suggestion, start_position=-len(input_pinyin))
+        lines = document.text.split("\n")
+        line = lines[-1]
+        suggestions = [
+            college
+            for college, pinyin_name in colleges_pinyin.items()
+            if pinyin_name.replace(" ", "").startswith(
+                get_pinyin(line.strip()).replace(" ", "")
+            )
+        ]
+        start_position = -len(line)
+        yield from (Completion(s, start_position=start_position) for s in suggestions)
 
 
 def get_delta_time(upload_time: float) -> str:
