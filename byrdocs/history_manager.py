@@ -33,7 +33,7 @@ class UploadHistory:
 
     @_with_update
     def add(self, file, md5, timestamp):
-        self.history.append([file, md5, timestamp])
+        self.history.append([file, md5, str(timestamp)])
         
     @_with_update  
     def get(self) -> list[list[str]]:
