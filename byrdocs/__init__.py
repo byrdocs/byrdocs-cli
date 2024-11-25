@@ -12,6 +12,7 @@ import argcomplete
 from tqdm import tqdm
 from byrdocs.yaml_init import ask_for_init, ask_for_confirmation, cancel    # TODO: 进行模块拆分便于维护，而不是全从这里导入进来
 from byrdocs.history_manager import UploadHistory
+from byrdocs.main_menu import main_menu
 
 info = lambda s: f"\033[1;94m{s}\033[0m"
 error = lambda s: f"\033[1;31m{s}\033[0m"
@@ -110,7 +111,16 @@ def _ask_for_init(file_name: str=None) -> str:
 def main():
     argcomplete.autocomplete(command_parser)
     args = command_parser.parse_args()
-
+    
+    if not args.command and not args.file:
+        menu_command = main_menu()
+        
+    if menu_command.command == 'upload_2':
+        args.command = 'upload'
+        args.file = menu_command.file
+    else:
+        args.command = menu_command.command
+        
     if args.command not in ['login', 'logout', 'upload', 'init', 'validate']:
         args.file = args.command
         args.command = 'upload'
