@@ -2,6 +2,7 @@ from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 from InquirerPy.validator import PathValidator
 from byrdocs.resources import title
+from byrdocs.custom_prompt import FilePathCompleter, ThreadedCompleter
 from pathlib import Path
 
 class Command:
@@ -35,12 +36,15 @@ def main_menu() -> Command:
     ).execute()
     
     if command == "upload_2":
-        file_path = inquirer.filepath(
+        file_path = inquirer.text(
             message="选择上传的文件路径",
             long_instruction="支持拖拽文件到终端。或直接输入，Tab 补全，Enter 确定。",
             validate=is_valid_file,
+            completer=ThreadedCompleter(FilePathCompleter(
+                    only_directories=False, only_files=False
+                )),
             invalid_message="请输入正确的文件路径",
-            only_files=False
+            # only_files=False
         ).execute()
         return Command(command, remove_quotes(file_path).expanduser().absolute())
     
