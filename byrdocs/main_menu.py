@@ -21,10 +21,11 @@ def main_menu() -> Command:
     print(f"\033[1;94m{title}\033[0m")
     command = inquirer.rawlist(
         message="请选择操作",
+        qmark="👋",
         choices=[
             Choice("upload_2", "上传文件"),   # 交互式上传
-            Choice("login", "登录到 BYR Docs"),
-            Choice("logout", "登出"),
+            Choice("login", "登录 BYR Docs"),
+            Choice("logout", "登出 BYR Docs"),
             Choice("init", "交互式生成文件元信息文件"),
             Choice("validate", "(待实现) 验证元信息文件的合法性"),
             Choice("exit", "退出"),
