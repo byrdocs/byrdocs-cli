@@ -52,7 +52,7 @@ def interrupt_handler(func):
             sys.exit(0)
     return wrapper
 
-def retry_handler(error_description: str, max_retries: int=10, interval: int=0.1):
+def retry_handler(error_description: str, max_retries: int=10, interval=0.1):
     def decorator(func):
         def wrapper(*args, **kwargs):
             for i in range(max_retries):
