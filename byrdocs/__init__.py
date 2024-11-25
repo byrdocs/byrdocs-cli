@@ -270,7 +270,7 @@ def main():
                 Config=upload_config
             )
             progress_bar.close()
-            UploadHistory().add(new_filename, md5, time())
+            UploadHistory().add(file, md5, time())
             print(info("文件上传成功！"))
             print(f"\t文件地址: {baseURL}/files/{new_filename}")
             
