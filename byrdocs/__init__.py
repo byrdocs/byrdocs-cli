@@ -85,6 +85,7 @@ def get_file_type(file) -> str:
 def request_login_data() -> dict[str, str]:
     return requests.post(f"{baseURL}/api/auth/login").json()
 
+@interrupt_handler
 @retry_handler("登录错误")
 def request_token(data: dict[str, str]) -> str:
     try:
@@ -172,8 +173,9 @@ def main():
         login()
 
     if args.command == 'logout':
-        os.remove(token_path)
-        print(info(f"登出成功"))
+        if ask_for_confirmation("确认登出？"):
+            os.remove(token_path)
+            print(info(f"登出成功"))
         exit(0)
 
     with token_path.open("r") as f:
