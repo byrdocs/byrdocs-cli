@@ -1,68 +1,80 @@
 # BYR Docs CLI
 
-## Install 
+## 安装
 
-### Using pip:
+### 使用 `pip` 安装：
 ```bash
 pip3 install byrdocs-cli
 ```
 
-### Using pipx (alternated, when you have problem with pip):
+### 使用 `pipx` 安装（当 `pip` 无法使用时）：
 
-Choose one of the following commands according to your package manager:
+根据包管理器选择对应的命令安装 `pipx`：
 ```bash
 sudo apt install pipx
 sudo dnf install pipx
 sudo pacman -S pipx
 ```
 
-Then:
+再使用 `pipx` 进行安装：
 ```
-pipx install byrdocs-cli    
-```
-
-## Usage
-
-```
-usage: byrdocs [-h] [--token TOKEN] [command] [file]
-
-Commands:
-  upload <file>    Upload a file. If no command is specified, it defaults to upload.
-  login            Authenticate with BYR Docs and obtain a token.
-  logout           Remove the locally stored authentication token.
-  init             交互式地生成文件元信息 yaml 文件
-  validate         (施工中) 判断 yaml 元信息文件的合法性
-
-positional arguments:
-  command        Command to execute
-  file           Path to the file to upload
-
-options:
-  -h, --help     show this help message and exit
-  --token TOKEN  Token for login command
-
-Examples:
- $ byrdocs login
- $ byrdocs /home/exam_paper.pdf
- $ byrdocs logout
- $ byrdocs init
+pipx install byrdocs-cli   
 ```
 
-## Development
+### 更新
 
-Build:
+使用 `pip`:
+```bash
+pip install byrdocs-cli --upgrade 
+```
+
+使用 `pipx`:
+```bash
+pipx upgrade byrdocs-cli
+```
+
+## 使用
+
+```
+用法: byrdocs [-h] [--token TOKEN] [command] [file]
+
+命令：
+  upload <文件路径>    上传文件 [默认命令]
+  login               登录到 BYR Docs
+  logout              退出登录
+  init                交互式生成文件元信息文件
+  validate            (待实现) 验证元信息文件的合法性
+
+参数:
+  command        要执行的命令
+  file           要上传的文件路径
+
+选项:
+  -h, --help     输出该帮助信息并退出
+  --token TOKEN  指定登录时使用的 token
+
+示例：
+  $ byrdocs login
+  $ byrdocs /home/exam_paper.pdf
+  $ byrdocs logout
+  $ byrdocs init
+```
+
+## 开发
+
+构建:
 
 ```bash
 python3 -m build
 ```
 
 
-Push to PyPI:
+发布到 PyPI:
 ```bash
 python3 -m twine upload --repository pypi dist/* --verbose
 ```
 
-Test:
+测试:
 ```bash
 python test.py [arguments]
 ```
