@@ -113,13 +113,12 @@ def main():
     args = command_parser.parse_args()
     
     if not args.command and not args.file:
-        menu_command = main_menu()
-        
-    if menu_command.command == 'upload_2':
-        args.command = 'upload'
-        args.file = menu_command.file
-    else:
-        args.command = menu_command.command
+        menu_command = main_menu()  
+        if menu_command.command == 'upload_2':
+            args.command = 'upload'
+            args.file = menu_command.file
+        else:
+            args.command = menu_command.command
         
     if args.command not in ['login', 'logout', 'upload', 'init', 'validate']:
         args.file = args.command
