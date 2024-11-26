@@ -76,16 +76,19 @@ def get_delta_time(upload_time: float) -> str:
 
 
 def get_recent_file_choices() -> tuple[list[Choice], list[str] | None]:
-    history = UploadHistory()
-    history = history.get()
-    history.sort(key=lambda x: x[2], reverse=True)
-    choices = []
-    time_strings = [get_delta_time(float(line[2])) for line in history]
-    choices = [Choice(value=line[1], name=f"{line[0]} ({time_strings[i]}){' ':>2}{line[1][:6]}...")
-               for i, line in enumerate(history)]
-    if choices == []:
+    try:
+        history = UploadHistory()
+        history = history.get()
+        history.sort(key=lambda x: x[2], reverse=True)
+        choices = []
+        time_strings = [get_delta_time(float(line[2])) for line in history]
+        choices = [Choice(value=line[1], name=f"{line[0]} ({time_strings[i]}){' ':>2}{line[1][:6]}...")
+                for i, line in enumerate(history)]
+        if choices == []:
+            return None
+        return choices, time_strings
+    except:
         return None
-    return choices, time_strings
 
 
 def get_recent_file_md5(file_name: str, time_strings: list[str]) -> str:
@@ -324,7 +327,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 data["publisher"] = result[4]
             if not_empty(result[5]):
                 data["publish_year"] = result[5]
-            data["isbn"] = to_clear_list(result[6])
+            data["isbn"] = to_isbn13(result[6])
             data["filetype"] = file_name[-3:]
         else:
             cancel()
