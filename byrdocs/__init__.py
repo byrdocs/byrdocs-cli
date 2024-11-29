@@ -103,7 +103,7 @@ def request_token(data: dict[str, str]) -> str:
 @interrupt_handler
 def upload_progress(chunk, progress_bar: tqdm):
     progress_bar.update(chunk)
-    
+
 @interrupt_handler
 def _ask_for_init(file_name: str=None) -> str:
     ask_for_init(file_name)
@@ -112,7 +112,7 @@ def _ask_for_init(file_name: str=None) -> str:
 def main():
     argcomplete.autocomplete(command_parser)
     args = command_parser.parse_args()
-    
+
     if not args.command and not args.file:
         menu_command = main_menu()  
         if menu_command.command == 'upload_2':
@@ -120,22 +120,21 @@ def main():
             args.file = menu_command.file
         else:
             args.command = menu_command.command
-        
+
     if args.command not in ['login', 'logout', 'upload', 'init', 'validate']:
         args.file = args.command
         args.command = 'upload'
 
     if args.file and not args.command:
         args.command = 'upload'
-    
+
     if args.command == 'init':
         _ask_for_init()
         exit(0)
-        
+
     if args.command == 'validate':
         print(warn("该功能尚未实现"))
         exit(0)
-
 
     config_dir = pathlib.Path.home() / ".config" / "byrdocs" 
     if not config_dir.exists():
@@ -160,7 +159,7 @@ def main():
         print(info("请在浏览器中访问以下链接进行登录:"))
         print("\t" + login_data["loginURL"])
         token = request_token(login_data)
-        
+
         with token_path.open("w") as f:
             f.write(token)
         print(info(f"登录成功，凭证已保存到 {token_path.absolute()}"))
@@ -255,8 +254,9 @@ def main():
         progress_bar = tqdm(total=file_size, unit='B', unit_scale=True, desc="Uploading")
 
         # https://blog.csdn.net/weixin_44123540/article/details/118492260
-        GB = 1024**3
-        upload_config = boto3.s3.transfer.TransferConfig(multipart_threshold=2*GB)
+        # 对于上传 100MB 的文件会有限制，需要分块上传
+        MB = 1024**2
+        upload_config = boto3.s3.transfer.TransferConfig(multipart_threshold=100*MB, multipart_chunksize=50*MB)
 
         try:
             s3_client.upload_file(
@@ -275,7 +275,7 @@ def main():
             UploadHistory().add(pathlib.Path(file).name, md5, time())
             print(info("文件上传成功！"))
             print(f"\t文件地址: {baseURL}/files/{new_filename}")
-            
+
             try:
                 if ask_for_confirmation("是否立即为该文件录入元信息？"):
                     _ask_for_init(new_filename)
