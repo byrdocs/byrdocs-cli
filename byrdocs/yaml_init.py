@@ -149,6 +149,7 @@ def to_isbn13(isbns) -> list[str] | None:
             result.append(isbnlib.mask(isbnlib.to_isbn13(isbn)))
         else:
             return None
+    result = list(set(result))
     return result
 
 
@@ -324,7 +325,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 data["publisher"] = result[4]
             if not_empty(result[5]):
                 data["publish_year"] = result[5]
-            data["isbn"] = to_clear_list(result[6])
+            data["isbn"] = to_isbn13(result[6])
             data["filetype"] = file_name[-3:]
         else:
             cancel()
