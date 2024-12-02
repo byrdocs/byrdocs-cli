@@ -63,8 +63,7 @@ class FilePathCompleter(Completer):
         else:
             dirname = Path(os.path.dirname(document.text))
 
-        for item in self._get_completion(document, dirname, validation):
-            yield item
+        yield from self._get_completion(document, dirname, validation)
 
     def _get_completion(
         self, document, path, validation
@@ -81,22 +80,18 @@ class FilePathCompleter(Completer):
                 continue
             if self._only_files and not file.is_file():
                 continue
-            if file.is_dir() or file.name.endswith(('.zip', '.pdf')):
-                if validation(file, document.text):
-                    file_name: str = file.name
-                    display_name = file_name + (self._delimiter if file.is_dir() else "")
-                    completion = Completion(
-                        file.name,
-                        start_position=-1 * len(os.path.basename(document.text)),
-                        display=display_name,
-                    )
-                    if file.is_dir():
-                        dir_completions.append(completion)
-                    else:
-                        file_completions.append(completion)
+            if (file.is_dir() or file.name.endswith(('.zip', '.pdf'))) and validation(file, document.text):
+                file_name: str = file.name
+                display_name = file_name + (self._delimiter if file.is_dir() else "")
+                completion = Completion(
+                    file.name,
+                    start_position=-1 * len(os.path.basename(document.text)),
+                    display=display_name,
+                )
+                if file.is_dir():
+                    dir_completions.append(completion)
+                else:
+                    file_completions.append(completion)
 
-        for completion in file_completions:
-            yield completion
-
-        for completion in dir_completions:
-            yield completion
+        yield from file_completions
+        yield from dir_completions
