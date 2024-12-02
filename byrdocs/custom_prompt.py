@@ -71,6 +71,11 @@ class FilePathCompleter(Completer):
     ) -> Generator[Completion, None, None]:
         if not path.is_dir():
             return
+
+        # To prioritize .zip and .pdf files in the completion menu, collect the completions in two separate lists
+        file_completions = []
+        dir_completions = []
+
         for file in path.iterdir():
             if self._only_directories and not file.is_dir():
                 continue
@@ -80,8 +85,18 @@ class FilePathCompleter(Completer):
                 if validation(file, document.text):
                     file_name: str = file.name
                     display_name = file_name + (self._delimiter if file.is_dir() else "")
-                    yield Completion(
+                    completion = Completion(
                         file.name,
                         start_position=-1 * len(os.path.basename(document.text)),
                         display=display_name,
                     )
+                    if file.is_dir():
+                        dir_completions.append(completion)
+                    else:
+                        file_completions.append(completion)
+
+        for completion in file_completions:
+            yield completion
+
+        for completion in dir_completions:
+            yield completion
