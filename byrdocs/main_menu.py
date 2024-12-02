@@ -40,9 +40,7 @@ def main_menu() -> Command:
             message="选择上传的文件路径",
             long_instruction="支持拖拽文件到终端。或直接输入，Tab 补全，Enter 确定。",
             validate=is_valid_file,
-            completer=ThreadedCompleter(FilePathCompleter(
-                    only_directories=False, only_files=False
-                )),
+            completer=ThreadedCompleter(FilePathCompleter()),
             invalid_message="请输入正确的文件路径",
             # only_files=False
         ).execute()

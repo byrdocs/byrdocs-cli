@@ -1,3 +1,10 @@
-boto3
-botocore
-requests
+argcomplete==3.5.1
+boto3==1.35.72
+botocore==1.35.72
+InquirerPy==0.3.4
+isbnlib==3.10.14
+pinyin==0.4.0
+prompt_toolkit==3.0.48
+PyYAML==6.0.2
+Requests==2.32.3
+tqdm==4.67.1
