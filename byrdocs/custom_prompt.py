@@ -76,12 +76,10 @@ class FilePathCompleter(Completer):
                 continue
             if self._only_files and not file.is_file():
                 continue
-            if validation(file, document.text):
-                file_name: str = file.name
-                if file_name.endswith(('.pdf', '.zip')):
-                    display_name = file_name
-                    if file.is_dir():
-                        display_name = f"{file_name}{self._delimiter}"
+            if file.is_dir() or file.name.endswith(('.zip', '.pdf')):
+                if validation(file, document.text):
+                    file_name: str = file.name
+                    display_name = file_name + (self._delimiter if file.is_dir() else "")
                     yield Completion(
                         file.name,
                         start_position=-1 * len(os.path.basename(document.text)),
