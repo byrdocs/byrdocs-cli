@@ -40,6 +40,7 @@ command_parser = argparse.ArgumentParser(
 command_parser.add_argument("command", nargs='?', help="要执行的命令")
 command_parser.add_argument("file", nargs='?', help="要上传的文件路径").completer = argcomplete.completers.FilesCompleter()
 command_parser.add_argument("--token", help="指定登录时使用的 token")
+command_parser.add_argument("--manually", "-m", action='store_true')
 
 baseURL = "https://byrdocs.org"
 
@@ -105,8 +106,8 @@ def upload_progress(chunk, progress_bar: tqdm):
     progress_bar.update(chunk)
 
 @interrupt_handler
-def _ask_for_init(file_name: str=None) -> str:
-    ask_for_init(file_name)
+def _ask_for_init(file_name: str=None, manually=False) -> str:
+    ask_for_init(file_name, manually)
 
 @interrupt_handler
 def main():
@@ -129,7 +130,18 @@ def main():
         args.command = 'upload'
 
     if args.command == 'init':
-        _ask_for_init()
+        if args.file:
+            if (file_type := get_file_type(args.file)) == "unsupported":
+                print(error("错误：不支持的文件格式，仅支持上传 PDF 或 ZIP 文件。"))
+                exit(1)
+            else:
+                with open(args.file, "rb") as f:
+                    _ask_for_init(f"{hashlib.md5(f.read()).hexdigest()}.{file_type}")
+                exit(0)
+        if args.manually:
+            _ask_for_init(None, True)
+        else:
+            _ask_for_init(None, False)
         exit(0)
 
     if args.command == 'validate':
