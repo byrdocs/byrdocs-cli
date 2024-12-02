@@ -78,10 +78,10 @@ def get_delta_time(upload_time: float) -> str:
 def get_recent_file_choices() -> tuple[list[Choice], list[str] | None]:
     history = UploadHistory()
     history = history.get()
-    history.sort(key=lambda x: x[2], reverse=True)
+    history.sort(key=lambda x: x['timestamp'], reverse=True)
     choices = []
-    time_strings = [get_delta_time(float(line[2])) for line in history]
-    choices = [Choice(value=line[1], name=f"{line[0]} ({time_strings[i]}){' ':>2}{line[1][:6]}...")
+    time_strings = [get_delta_time(float(line['timestamp'])) for line in history]
+    choices = [Choice(value=line['md5'], name=f"{line['file']} ({time_strings[i]}){' ':>2}{line['md5'][:6]}...")
                for i, line in enumerate(history)]
     if choices == []:
         return None
@@ -93,8 +93,8 @@ def get_recent_file_md5(file_name: str, time_strings: list[str]) -> str:
     history = history.get()
     for index, line in enumerate(history):
         file_name = file_name.removesuffix(f"({time_strings[index]})").strip()
-        if line[0] == file_name:
-            return line[1]
+        if line['file'] == file_name:
+            return line['md5']
     return "Unknown"
 
 
@@ -212,11 +212,11 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 message="选择最近上传的文件:",
                 long_instruction="输入文件名或使用上下键选择，按回车确定，按 ESC 跳过。",
                 choices=recent_file_choices,
-                validate=format_filename,
+                # validate=format_filename,
                 # transformer=lambda name: f"{name}: {get_recent_file_md5(name, time_strings)}",
                 keybindings={"skip": [{"key": "escape"}]},
                 mandatory=False,
-                invalid_message="请选择一个有效的文件。"
+                invalid_message="请选择一个有效的文件。",
             ).execute()
     if file_name is None:
         file_name = inquirer.text(
@@ -337,7 +337,7 @@ def ask_for_init(file_name: str = None) -> str:  # 若需要传入 file_name，�
                 "type": "input",
                 "instruction": " ",
                 "message": "输入考试学院:",
-                "long_instruction": "请确认学院实际考过此试卷，无法确认可留空。每行输入一个学院，按 Tab 补全，按 Enter 换行，按 ESC + Enter 提交",
+                "long_instruction": "请确认学院实际考过此试卷，无法确认可留空。\n每行输入一个学院，按 Tab 补全，按 Enter 换行，按 ESC + Enter 提交",
                 "completer": CollageCompleter(),
                 "multiline": True,
                 "mandatory": False,

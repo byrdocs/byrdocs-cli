@@ -77,6 +77,13 @@ class Tests:
         history.add("file", "md5", "timestamp")
         assert history.get() == [{"file": "file", "md5": "md5", "timestamp": "timestamp"}]
     
+    def add(self):
+        history = UploadHistory()
+        history.add("file1", "ab345678901234567890123456789012.pdf", "1733110485.531392")
+        history.add("file2", "cd345678901234567890123456789012.zip", "1733010485.531392")
+        history.add("file3", "ef345678901234567890123456789012.pdf", "1733050485.531392")
+        history.add("测试 空 格 文 件 名 .zip", "bbbb5678901234567890123456789012.pdf", "1730050485.531392")
+    
     def test_remove(self):
         history = UploadHistory()
         history.add("file", "md5", "timestamp")
@@ -131,7 +138,8 @@ class Tests:
 
 if __name__ == "__main__":
     tests = Tests()
-    tests.test_clear()
+    tests.add()
+    # tests.test_clear()
     # tests.test_add()
     # tests.test_remove()
     # tests.test_multiple_add()
