@@ -2,3 +2,4 @@ dist/
 byrdocs_cli.egg-info/
 **/__pycache__/
 *.yml
+.venv/
