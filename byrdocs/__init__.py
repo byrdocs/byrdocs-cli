@@ -74,12 +74,12 @@ def retry_handler(error_description: str, max_retries: int=10, interval=0.1):
 
 def get_file_type(file) -> str:
     # https://en.wikipedia.org/wiki/List_of_file_signatures
-    # use magic number to check file type
+    # use magic number to check file type, together with suffix
     with open(file, "rb") as f:
         magic_number = f.read(4)
-        if magic_number == b"%PDF":
+        if magic_number == b"%PDF" and file.endswith(".pdf"):
             return "pdf"
-        elif magic_number == b"PK\x03\x04":
+        elif magic_number == b"PK\x03\x04" and file.endswith(".zip"):
             return "zip"
         else:
             return "unsupported"
