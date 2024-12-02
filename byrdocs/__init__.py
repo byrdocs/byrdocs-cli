@@ -31,10 +31,12 @@ command_parser = argparse.ArgumentParser(
     formatter_class=argparse.RawDescriptionHelpFormatter,
     epilog=
         "示例：\n" +
+        "  $ byrdocs upload 大物实验.zip\n" +
         "  $ byrdocs login\n" +
         "  $ byrdocs /home/exam_paper.pdf\n" +
         "  $ byrdocs logout\n" +
-        "  $ byrdocs init\n"
+        "  $ byrdocs init\n" +
+        "  $ byrdocs init 工科数学分析基础(上).pdf\n"
     )
 # command_parser.add_argument('--help', '-h', action='help', help='Show this help message and exit')
 command_parser.add_argument("command", nargs='?', help="要执行的命令")
