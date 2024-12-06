@@ -13,6 +13,10 @@ File format:
             "timestamp": "timestamp"
         }
     ]
+    "courses": [
+        "1",
+        "2"
+    ]
 }
 '''
 
@@ -20,25 +24,30 @@ class UploadHistory:
     def __init__(self):
         self.data: dict[str, list[dict[str, str]]] = {}
         self.history: list[dict[str, str]] = []
+        self.courses: list[str] = []
         try:
             if history_path.exists():
                 self._read()
             else:
                 history_path.touch()
                 self.history = []
-                self.data = {"history": self.history}
+                self.courses = []
+                self.data = {"history": self.history, "courses": self.courses}
         except json.JSONDecodeError:
             self.history = []
-            self.data = {"history": self.history}
+            self.courses = []
+            self.data = {"history": self.history, "courses": self.courses}
             self._write()
     
     def _read(self) -> None:
         with history_path.open("r") as f:
             self.data = json.load(f)
             self.history = self.data.get("history", [])
+            self.courses = self.data.get("courses", [])
     
     def _write(self):
         self.data["history"] = self.history
+        self.data["courses"] = self.courses
         with history_path.open("w") as f:
             json.dump(self.data, f, indent=4)
     
@@ -47,6 +56,7 @@ class UploadHistory:
             self._read()
             result = func(self, *args, **kwargs)
             self.data["history"] = self.history
+            self.data["courses"] = self.courses
             self._write()
             return result
         return wrapper
@@ -58,18 +68,34 @@ class UploadHistory:
             "md5": md5,
             "timestamp": timestamp
         })
+    
+    @_with_update
+    def add_course(self, course: str):
+        self.courses.append(course)
         
     @_with_update  
     def get(self) -> list[dict[str, str]]:
         return self.history
     
     @_with_update
+    def get_courses(self) -> list[str]:
+        return self.courses
+    
+    @_with_update
     def clear(self):
         self.history = []
+        
+    @_with_update
+    def clear_courses(self):
+        self.courses = []
     
     @_with_update
     def remove(self, index):
         self.history.pop(index)
+        
+    @_with_update
+    def remove_course(self, course: str):
+        self.courses.remove(course)
         
 class Tests:
     def test_add(self):
@@ -134,11 +160,36 @@ class Tests:
             {"file": "file", "md5": "md5", "timestamp": "timestamp"},
             {"file": "file2", "md5": "md52", "timestamp": "timestamp2"}
         ]
+        
+    def test_clear_courses(self):
+        history = UploadHistory()
+        history.add_course("1")
+        history.clear_courses()
+        assert history.get_courses() == []
+        
+    def test_multiple_add_course(self):
+        history = UploadHistory()
+        history.add_course("1")
+        history.add_course("2")
+        assert history.get_courses() == ["1", "2"]
+        
+    def test_multiple_remove_course(self):
+        history = UploadHistory()
+        history.add_course("1")
+        history.add_course("2")
+        history.remove_course("1")
+        assert history.get_courses() == ["2"]
+        
+    def test_get_courses(self):
+        history = UploadHistory()
+        history.add_course("1")
+        history.add_course("2")
+        assert history.get_courses() == ["1", "2"]
     
 
 if __name__ == "__main__":
     tests = Tests()
-    tests.add()
+    # tests.add()
     # tests.test_clear()
     # tests.test_add()
     # tests.test_remove()
@@ -147,3 +198,7 @@ if __name__ == "__main__":
     # tests.test_multiple_get()
     # tests.test_multiple_clear()
     # tests.test_multiple_add()
+    # tests.test_clear_courses()
+    # tests.test_multiple_add_course()
+    # tests.test_multiple_remove_course()
+    # tests.test_get_courses()
