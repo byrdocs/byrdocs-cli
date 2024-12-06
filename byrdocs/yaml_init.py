@@ -29,6 +29,8 @@ colleges = ["信息与通信工程学院", "电子工程学院", "计算机学�
 colleges_pinyin = {c: get_pinyin(c) for c in colleges}
 college_completer = {s: None for s in colleges}
 
+course_name_completer = {s: None for s in UploadHistory().get_courses()}
+
 
 def college_validate(content):
     content = content.strip()
@@ -362,6 +364,7 @@ def ask_for_init(file_name: str = None, manually: bool = False) -> str:  # 若�
                 "message": "输入考试课程全称:",
                 "long_instruction": "需要包括字母和括号中的内容，例如「高等数学A（上）」",
                 "validate": not_empty,
+                "completer": course_name_completer,
                 "mandatory_message": "此项为必填项",
                 "invalid_message": "此项为必填项"
             }
@@ -428,6 +431,7 @@ def ask_for_init(file_name: str = None, manually: bool = False) -> str:  # 若�
             if result['course_type'] is not None:
                 data['course']['type'] = result['course_type']
             data['course']['name'] = result['course_name'].strip()
+            UploadHistory().add_course(data['course']['name'])
             data['time']['start'] = time_start.strip()
             data['time']['end'] = time_end.strip()
             if result['semester'] is not None:
