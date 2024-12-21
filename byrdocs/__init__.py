@@ -72,14 +72,18 @@ def retry_handler(error_description: str, max_retries: int=10, interval=0.1):
         return wrapper
     return decorator
 
-def get_file_type(file) -> str:
+def get_file_type(file: pathlib.Path | str) -> str:
     # https://en.wikipedia.org/wiki/List_of_file_signatures
     # use magic number to check file type, together with suffix
     with open(file, "rb") as f:
         magic_number = f.read(4)
-        if magic_number == b"%PDF" and file.endswith(".pdf"):
+        file_name: str = file
+        if type(file) in (pathlib.PosixPath, pathlib.WindowsPath, pathlib.Path):
+            # 若不如此提取，类 unix 系统中可能传入 PosixPath 类型的 file，出现 bug
+            file_name = file.name
+        if magic_number == b"%PDF" and file_name.endswith(".pdf"):
             return "pdf"
-        elif magic_number == b"PK\x03\x04" and file.endswith(".zip"):
+        elif magic_number == b"PK\x03\x04" and file_name.endswith(".zip"):
             return "zip"
         else:
             return "unsupported"
