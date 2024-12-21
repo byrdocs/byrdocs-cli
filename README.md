@@ -21,6 +21,12 @@ sudo pacman -S pipx
 pipx install byrdocs-cli   
 ```
 
+### 使用 `homebrew` 安装（MacOS或Linux）：
+```zsh
+brew tap byrdocs/homebrew-byrdocs-cli
+brew install byrdocs-cli
+```
+
 ### 更新
 
 使用 `pip`:
@@ -31,6 +37,11 @@ pip install byrdocs-cli --upgrade
 使用 `pipx`:
 ```bash
 pipx upgrade byrdocs-cli
+```
+
+使用 `homebrew`:
+```zsh
+brew upgrade byrdocs-cli
 ```
 
 ## 使用
