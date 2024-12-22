@@ -11,6 +11,7 @@ pip3 install byrdocs-cli
 
 根据包管理器选择对应的命令安装 `pipx`：
 ```bash
+sudo pip install pipx
 sudo apt install pipx
 sudo dnf install pipx
 sudo pacman -S pipx
