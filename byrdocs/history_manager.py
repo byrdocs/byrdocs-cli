@@ -21,29 +21,33 @@ File format:
 '''
 
 class UploadHistory:
+    def _create_history_file(self):
+        if not history_path.exists():
+            history_path.touch()
+        self.history = []
+        self.courses = []
+        self.data = {"history": self.history, "courses": self.courses}
+        self._write()
+
     def __init__(self):
         self.data: dict[str, list[dict[str, str]]] = {}
         self.history: list[dict[str, str]] = []
         self.courses: list[str] = []
-        try:
-            if history_path.exists():
-                self._read()
-            else:
-                history_path.touch()
-                self.history = []
-                self.courses = []
-                self.data = {"history": self.history, "courses": self.courses}
-        except json.JSONDecodeError:
-            self.history = []
-            self.courses = []
-            self.data = {"history": self.history, "courses": self.courses}
-            self._write()
+        if history_path.exists():
+            self._read()
+        else:
+            self._create_history_file()
+        self._write()
     
     def _read(self) -> None:
-        with history_path.open("r") as f:
-            self.data = json.load(f)
-            self.history = self.data.get("history", [])
-            self.courses = self.data.get("courses", [])
+        try:
+            with history_path.open("r") as f:
+                self.data = json.load(f)
+                self.history = self.data.get("history", [])
+                self.courses = self.data.get("courses", [])
+        except json.JSONDecodeError:
+            self._create_history_file()
+            self._read()
     
     def _write(self):
         self.data["history"] = self.history
