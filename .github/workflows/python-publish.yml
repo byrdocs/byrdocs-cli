@@ -64,3 +64,10 @@ jobs:
 
       - name: Publish release distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Trigger homebrew formula generation
+        run: |
+          curl -X POST \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -d '{"event_type": "generate"}' \
+          https://api.github.com/repos/byrdocs/homebrew-byrdocs-cli/dispatches
