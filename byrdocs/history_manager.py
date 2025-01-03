@@ -23,6 +23,8 @@ File format:
 class UploadHistory:
     def _create_history_file(self):
         if not history_path.exists():
+            if not history_path.parent.exists():    # avoid potention crash
+                history_path.parent.mkdir(parents=True)
             history_path.touch()
         self.history = []
         self.courses = []
