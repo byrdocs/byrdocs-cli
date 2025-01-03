@@ -196,7 +196,9 @@ def to_clear_list(content: str) -> list[str]:
     # remove duplicate and empty
     content: list = content.strip().split("\n")
     content = [s.strip() for s in content]
-    content = list(set(filter(None, content)))
+    # content = list(set(filter(None, content)))
+    seen = set()
+    content = [x for x in content if not (x in seen or seen.add(x))]    # keep the original order of list
     return content
 
 
