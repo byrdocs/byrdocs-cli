@@ -1,3 +1,7 @@
+# fit for python 3.9 and lower
+# https://stackoverflow.com/questions/75431587/type-hinting-with-unions-and-collectables-3-9-or-greater
+from __future__ import annotations
+
 import boto3
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 import requests

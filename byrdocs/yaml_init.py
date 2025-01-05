@@ -1,3 +1,7 @@
+# fit for python 3.9 and lower
+# https://stackoverflow.com/questions/75431587/type-hinting-with-unions-and-collectables-3-9-or-greater
+from __future__ import annotations
+
 from InquirerPy import inquirer, prompt
 from InquirerPy.base.control import Choice
 from prompt_toolkit.completion import Completer, Completion
