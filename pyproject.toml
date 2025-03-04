@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 [project]
 name = "byrdocs_cli"
-version = "0.5.6"
+version = "0.5.7"
 authors = [
   { name="Rikka", email="rikka@byrdocs.org" },
 ]
@@ -25,7 +25,8 @@ dependencies = [
     "InquirerPy==0.3.4",
     "pyyaml==6.0.2",
     "isbnlib==3.10.14",
-    "pinyin==0.4.0"
+    "pinyin==0.4.0",
+    "yaspin==3.1.0"
 ]
 
 [project.urls]
