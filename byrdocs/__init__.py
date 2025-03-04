@@ -19,6 +19,7 @@ from tqdm import tqdm
 from byrdocs.yaml_init import ask_for_init, ask_for_confirmation, cancel    # TODO: 进行模块拆分便于维护，而不是全从这里导入进来
 from byrdocs.history_manager import UploadHistory
 from byrdocs.main_menu import main_menu
+from yaspin import yaspin
 
 info = lambda s: f"\033[1;94m{s}\033[0m"
 error = lambda s: f"\033[1;31m{s}\033[0m"
@@ -218,6 +219,7 @@ def main():
                 Choice("exit", "退出 byrdocs-cli"),
             ],
             default="exit",
+            transformer=lambda result: f"为文件 {new_filename} 录入元信息..." if ("录" in result) else result,
         ).execute()
         if action == "init":
             _ask_for_init(new_filename)
@@ -253,9 +255,10 @@ def main():
         headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
 
         try:
-            response = requests.request(
-                "POST", f"{baseURL}/api/s3/upload", headers=headers, data=payload
-            )
+            with yaspin(color="grey") as spinner:
+                response = requests.request(
+                    "POST", f"{baseURL}/api/s3/upload", headers=headers, data=payload
+                )
         except Exception as e:
             print(error(f"上传文件时出现错误: {e}"))
             exit(1)
