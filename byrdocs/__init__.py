@@ -13,6 +13,8 @@ import sys
 import os
 from time import sleep, time
 import argcomplete
+from InquirerPy import inquirer
+from InquirerPy.base.control import Choice
 from tqdm import tqdm
 from byrdocs.yaml_init import ask_for_init, ask_for_confirmation, cancel    # TODO: 进行模块拆分便于维护，而不是全从这里导入进来
 from byrdocs.history_manager import UploadHistory
@@ -202,6 +204,26 @@ def main():
     with token_path.open("r") as f:
         token = f.read().strip()
 
+    def get_new_filename(file: str) -> str:
+        with open(file, "rb") as f:
+            return f"{hashlib.md5(f.read()).hexdigest()}.{get_file_type(file)}"
+
+    @interrupt_handler  # 要加上，不然 Ctrl-C 会被当做未知错误处理
+    def file_already_exists(new_filename: str) -> None:
+        action = inquirer.select(
+            message="文件已存在。您是否需要录入元信息？",
+            qmark="🤔",
+            choices=[
+                Choice("init", "录入元信息"),
+                Choice("exit", "退出 byrdocs-cli"),
+            ],
+            default="exit",
+        ).execute()
+        if action == "init":
+            _ask_for_init(new_filename)
+        else:
+            exit(0)
+
     if args.command == 'upload' or args.file:
         if not args.file:
             print(error("错误：未指定要上传的文件"))
@@ -211,8 +233,7 @@ def main():
         file = args.file
 
         try:
-            with open(file, "rb") as f:
-                md5 = hashlib.md5(f.read()).hexdigest()
+            new_filename = get_new_filename(file)
         except FileNotFoundError:
             print(error(f"未找到文件: {file}"))
             exit(1)
@@ -226,7 +247,7 @@ def main():
 
         payload = json.dumps(
             {
-                "key": (new_filename := f"{md5}.{file_type}"),
+                "key": new_filename,
             }
         )
         headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
@@ -243,8 +264,12 @@ def main():
 
         if not upload_response_data["success"]:
             try:
-                print(error(f"服务器错误: {response.json()['error']}"))    # TODO: 优化失败处理
-            except:
+                if '文件已存在' in (error_msg := response.json()['error']):
+                    file_already_exists(get_new_filename(file))
+                else:
+                    print(error(f"服务器错误: {error_msg}"))    # TODO: 优化失败处理
+            except Exception as err:
+                print(err)
                 print(error(f"未知错误: {response.text}"))
             exit(1)
 
