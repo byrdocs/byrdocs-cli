@@ -32,7 +32,7 @@ brew install byrdocs-cli
 
 使用 `pip`:
 ```bash
-pip install byrdocs-cli --upgrade 
+pip install --upgrade byrdocs-cli
 ```
 
 使用 `pipx`:
