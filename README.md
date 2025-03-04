@@ -47,6 +47,9 @@ brew upgrade byrdocs-cli
 
 ## 使用
 
+直接在命令行中输入命令 `byrdocs`，打开交互式页面，或填写命令参数调用：
+
+
 ```
 用法: byrdocs [-h] [--token TOKEN] [command] [file]
 
