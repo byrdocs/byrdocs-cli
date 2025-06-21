@@ -248,7 +248,7 @@ def ask_for_init(file_name: str = None, manually: bool = False) -> str:  # 若�
         if not continued:
             cancel()
 
-    type: str = inquirer.select(
+    type: str = inquirer.rawlist(
         mandatory_message="此项为必填项",
         message="选择文件类型:",
         choices=[
@@ -355,7 +355,7 @@ def ask_for_init(file_name: str = None, manually: bool = False) -> str:  # 若�
             },
             {
                 "name": "course_type",
-                "type": "list",
+                "type": "rawlist",
                 "message": "选择考试学段:",
                 "mandatory": False,
                 "choices": [
@@ -393,7 +393,7 @@ def ask_for_init(file_name: str = None, manually: bool = False) -> str:  # 若�
         questions2 = [
             {
                 "name": "semester",
-                "type": "list",
+                "type": "rawlist",
                 "message": "选择考试所在学期:",
                 "mandatory": False,
                 "choices": [
@@ -404,7 +404,7 @@ def ask_for_init(file_name: str = None, manually: bool = False) -> str:  # 若�
             },
             {
                 "name": "stage",
-                "type": "list",
+                "type": "rawlist",
                 "message": "选择考试阶段:",
                 "mandatory": False,
                 "choices": [
@@ -415,12 +415,13 @@ def ask_for_init(file_name: str = None, manually: bool = False) -> str:  # 若�
             },
             {
                 "name": "content",
-                "type": "checkbox",
+                "type": "rawlist",
                 "message": "选择文件内容类型:",
-                "long_instruction": "多选，使用空格选择，回车提交。\n如果只有答案而没有题面，不能算作「原题」。\n如果答案不能涵盖绝大多数题目，不能算作「答案」。\n如果题目、答案都显著不全，这样的文件不应被收录。",
+                "long_instruction": "按回车提交。\n如果只有答案而没有题面，不能算作「原题」。\n如果答案不能涵盖绝大多数题目，不能算作「答案」。\n如果题目、答案都显著不全，这样的文件不应被收录。",
                 "choices": [
                     Choice(value="原题", name="原题"),
                     Choice(value="答案", name="答案"),
+                    Choice(value=["原题", "答案"], name="原题 + 答案")
                 ],
                 "validate": not_empty,
                 "invalid_message": "此项为必填项"
@@ -478,7 +479,8 @@ def ask_for_init(file_name: str = None, manually: bool = False) -> str:  # 若�
             },
             {
                 "name": "content",
-                "type": "checkbox",
+                "type": "rawlist",
+                "multiselect": "True",
                 "message": "选择资料类型:",
                 "long_instruction": "多选，使用空格选择，回车提交",
                 "choices": ["思维导图", "题库", "答案", "知识点", "课件"],
